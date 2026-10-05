@@ -1,0 +1,12 @@
+-- ==============================================================================
+-- TRAVELFLOW CMS (TF CMS) — ESQUEMA CONSOLIDADO OFICIAL VIGENTE
+-- ==============================================================================
+-- ESTADO EN FASE 0B-L:
+-- SCHEMA PRODUCTIVO TODAVÍA NO DEFINIDO
+--
+-- REGLA DE GOBERNANZA VINCULANTE:
+-- 1. Este archivo representará en el futuro el volcado consolidado del esquema oficial.
+-- 2. NO es un segundo sistema de migraciones ni debe modificarse manualmente con tablas improvisadas.
+-- 3. La única fuente de migraciones ejecutables de Laravel es: database/migrations/
+-- 4. Ninguna tabla de dominio de TF CMS (Tours, Destinos, Itinerarios, etc.) ha sido creada en esta fase.
+-- ==============================================================================
