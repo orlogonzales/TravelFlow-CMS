@@ -13,7 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->statefulApi();
+        // En TravelFlow CMS, los endpoints de routes/api.php pertenecen a la SPA same-origin
+        // y consumen el grupo 'web' explícitamente para sesión HttpOnly, cookies y CSRF.
+        // Se evita $middleware->statefulApi() para no duplicar StartSession y EncryptCookies.
 
         $middleware->alias([
             'active' => EnsureUserIsActive::class,

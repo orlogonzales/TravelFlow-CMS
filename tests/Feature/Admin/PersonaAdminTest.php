@@ -400,4 +400,43 @@ class PersonaAdminTest extends TestCase
             ->getJson('/api/admin/personas')
             ->assertStatus(403);
     }
+
+    /**
+     * Peticiones consecutivas autenticadas de detalle y edición mantienen la sesión
+     * sin regresión de Unauthenticated (Fase 1C.1B).
+     */
+    public function test_consecutive_authenticated_requests_maintain_session_on_detail_and_update(): void
+    {
+        $persona = Persona::create([
+            'nombres' => 'Carlos',
+            'apellidos' => 'Mendoza',
+            'tipo_documento' => 'DNI',
+            'numero_documento' => '33445566',
+            'estado' => PersonaStatus::ACTIVO,
+        ]);
+
+        // 1. Listado inicial
+        $this->actingAs($this->adminUser, 'web')
+            ->getJson('/api/admin/personas')
+            ->assertStatus(200);
+
+        // 2. Consulta de detalle (Ver ficha)
+        $this->getJson("/api/admin/personas/{$persona->id}")
+            ->assertStatus(200)
+            ->assertJsonPath('data.nombres', 'Carlos');
+
+        // 3. Edición (Guardar cambios)
+        $this->putJson("/api/admin/personas/{$persona->id}", [
+            'nombres' => 'Carlos Alberto',
+            'apellidos' => 'Mendoza',
+            'estado' => 'activo',
+        ])
+            ->assertStatus(200)
+            ->assertJsonPath('data.nombres', 'Carlos Alberto');
+
+        // 4. Consulta de detalle post-actualización
+        $this->getJson("/api/admin/personas/{$persona->id}")
+            ->assertStatus(200)
+            ->assertJsonPath('data.nombres', 'Carlos Alberto');
+    }
 }
