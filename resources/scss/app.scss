@@ -1,0 +1,19 @@
+// TravelFlow CMS - Estilos Base FASE 0D
+// Bootstrap 5.3.8 (Infraestructura CSS Base Oficial)
+@import "bootstrap/scss/bootstrap";
+
+// Font Awesome Free (Iconografía Oficial Free)
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+
+// TF Design System - Espacio reservado para tokens, foundations y componentes futuros
+:root {
+  --tf-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --tf-brand-primary: #0d6efd;
+  --tf-brand-dark: #1e293b;
+}
+
+body {
+  font-family: var(--tf-font-family);
+  background-color: #f8fafc;
+  color: #1e293b;
+}

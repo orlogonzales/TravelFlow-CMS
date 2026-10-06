@@ -1,8 +1,8 @@
 # Estrategia Integral de Testing — TF CMS
 
 **Documento:** `docs/arquitectura/testing.md`
-**Estado:** `DEFINIDO` (MySQL motor oficial único, SQLite descartado totalmente, suite estructurada y guard de seguridad)
-**Versión:** 2.1 — Fase 0C.1B
+**Estado:** `DEFINIDO E IMPLEMENTADO` (MySQL exclusivo, tf_cms_test creada, phpunit.xml configurado y guard de seguridad verificado)
+**Versión:** 3.0 — Fase 0D
 
 ---
 
@@ -52,26 +52,27 @@ Se define una suite rigurosa dividida por responsabilidades claras:
 
 ### 3.1 Entornos Separados
 - **Base de Datos de Desarrollo:** `tf_cms` (MySQL 8.4.3). Contiene el estado local de trabajo.
-- **Base de Datos de Testing:** `tf_cms_test` (MySQL 8.4.3). Base de datos dedicada exclusivamente a la ejecución automatizada de pruebas con transacciones o migraciones controladas.
-  > **Nota de Fase 0C.1B:** La base de datos `tf_cms_test` queda definida a nivel conceptual y normativo; **NO se crea físicamente en MySQL durante esta fase documental**.
+- **Base de Datos de Testing:** `tf_cms_test` (MySQL 8.4.3). Base de datos dedicada exclusivamente a la ejecución automatizada de pruebas, creada físicamente en MySQL en la Fase 0D con charset `utf8mb4` y collation `utf8mb4_0900_ai_ci`.
 
-### 3.2 Barrera de Seguridad Obligatoria en `TestCase`
+### 3.2 Barrera de Seguridad Implementada en `TestCase` (`IMPLEMENTADO EN FASE 0D`)
 Queda terminantemente prohibido ejecutar pruebas destructivas (`migrate:fresh`, `db:wipe`, vaciado de tablas) sobre la base de datos de desarrollo `tf_cms`.
-- Cuando se configure formalmente la infraestructura de testing en su microfase correspondiente, se implementará un guard estricto en el `TestCase` base de Laravel que abortará de inmediato la suite si la base de datos conectada no contiene el sufijo `_test` o no es explícitamente `tf_cms_test`.
+- En `tests/TestCase.php` se implementó el guard `ensureTestingDatabase()` que verifica en cada test:
+  1. `config('app.env') === 'testing'`.
+  2. `DB::connection()->getDatabaseName() === 'tf_cms_test'`.
+- Si alguna condición no se cumple, el guard aborta la suite con `RuntimeException`. Su eficacia está garantizada mediante tests automatizados en `tests/Feature/SecurityGuardTest.php`.
 
 ---
 
-## 4. Estado de `phpunit.xml` y Deuda Técnica del Skeleton
+## 4. Configuración Oficial de `phpunit.xml` (`IMPLEMENTADO EN FASE 0D`)
 
-El archivo `phpunit.xml` heredado de la instalación inicial de Laravel 13 contiene provisionalmente:
+La configuración SQLite heredada del esqueleto de Laravel fue retirada en la Fase 0D y sustituida por la conexión oficial MySQL:
 ```xml
-<env name="DB_CONNECTION" value="sqlite"/>
-<env name="DB_DATABASE" value=":memory:"/>
+<env name="DB_CONNECTION" value="mysql"/>
+<env name="DB_HOST" value="127.0.0.1"/>
+<env name="DB_PORT" value="3306"/>
+<env name="DB_DATABASE" value="tf_cms_test"/>
+<env name="DB_USERNAME" value="root"/>
+<env name="DB_PASSWORD" value=""/>
 ```
-- **Clasificación:**
-  ```text
-  CONFIGURACIÓN HEREDADA DEL SKELETON
-  DEUDA TÉCNICA PENDIENTE DE CORRECCIÓN CONTROLADA
-  ```
-- **Regla de Fase 0C.1B:** No se modifica `phpunit.xml` en la presente fase para preservar la naturaleza puramente documental de 0C.1B.
-- Su actualización hacia la conexión dedicada MySQL `tf_cms_test` se ejecutará formalmente cuando se autorice la microfase de infraestructura de testing.
+- La suite de pruebas ejecuta todas sus operaciones contra MySQL `tf_cms_test` sin depender de SQLite ni bases en memoria.
+- Se mantiene `.env.testing.example` como plantilla segura y reproducible para otros entornos de desarrollo.

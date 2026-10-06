@@ -1,22 +1,29 @@
 # Stack Tecnológico y Taxonomía Oficial de Decisiones — TF CMS
 
 **Documento:** `docs/arquitectura/stack.md`
-**Estado:** `DEFINIDO Y VINCULANTE` (Consolidación Arquitectónica Fase 0C.1B con Adenda Bootstrap 5.3.8)
-**Versión:** 4.0 — Fase 0C.1B
+**Estado:** `DEFINIDO E IMPLEMENTADO` (Infraestructura Frontend y MySQL Testing en Fase 0D)
+**Versión:** 5.0 — Fase 0D
 
 ---
 
-## 1. Stack Oficial Base
+## 1. Stack Oficial Base e Infraestructura Instalada
 
 ```text
 Backend:                 Laravel 13.x
 Runtime PHP:             PHP 8.3+ (Local verificado: PHP 8.3.30 ZTS)
-Base de Datos:           MySQL 8.4+ (Local verificado: MySQL 8.4.3 LTS en tf_cms)
-Frontend Administrativo: Vue 3 + TypeScript + Pinia + Vue Router + Vite
-Framework CSS Admin:     Bootstrap 5.3.8 (Infraestructura CSS / Grid / Placeholders)
-Capa Visual Oficial:     TF Design System (Tokens de diseño, coherencia UX y componentes propios)
-Iconografía Oficial:     Font Awesome (Free)
-Cliente HTTP Admin:      Fetch API nativo (composable useApi())
+Base de Datos Dev:       MySQL 8.4+ (Local verificado: MySQL 8.4.3 LTS en tf_cms)
+Base de Datos Test:      MySQL 8.4+ (Local verificado: MySQL 8.4.3 LTS en tf_cms_test)
+Frontend Reactivo:       Vue 3 (Instalado: 3.5.43)
+Tipado Estricto:         TypeScript (Instalado: 5.9.3 con vue-tsc 2.2.12)
+Estado Global:           Pinia (Instalado: 2.3.1)
+Enrutador SPA:           Vue Router (Instalado: 4.6.4)
+Build Tool:              Vite 7 (Instalado: 7.3.6 con @vitejs/plugin-vue 6.0.9)
+Framework CSS Admin:     Bootstrap 5.3.8 (Instalado: exactamente 5.3.8)
+Capa Visual Oficial:     TF Design System (Tokens de diseño base)
+Iconografía Oficial:     Font Awesome Free (Instalado: 6.7.2, SIL OFL 1.1 / MIT)
+Feedback / Alertas:      SweetAlert2 (Instalado: 11.26.25, MIT)
+Cliente HTTP Admin:      Fetch API nativo (Axios retirado del proyecto)
+Tailwind CSS:            Retirado completamente del proyecto
 Servidor Web Local:      Apache 2.4.66 con VirtualHost dedicado (app.tf-cms.test -> /public)
 ```
 
