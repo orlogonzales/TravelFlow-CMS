@@ -1,109 +1,76 @@
-﻿# Seguridad, AuditorÃ­a y Convenciones de API â€” TF CMS
+# Seguridad, Auditoría y Convenciones de API — TF CMS
 
 **Documento:** `docs/arquitectura/seguridad.md`
-**Estado:** `PROPUESTO` (Sujeto a aprobaciÃ³n formal de ChatGPT)
-**VersiÃ³n:** 1.0 â€” Fase 0C
+**Estado:** `DEFINIDO` (Auditoría funcional vs Logging técnico, Controles de backend y Frontera generacional) / `PROPUESTO` (Convenciones de API pública)
+**Versión:** 2.0 — Fase 0C.1B
 
 ---
 
-## 1. AuditorÃ­a Funcional vs Logging TÃ©cnico
+## 1. Auditoría Funcional vs Logging Técnico (`DEFINIDO`)
 
-Se establece una estricta separaciÃ³n de responsabilidades:
+Se establece una estricta separación arquitectónica entre eventos de infraestructura técnica y trazabilidad de negocio:
 
 ```text
-LOGGING TÃ‰CNICO (Monolog)            â‰            AUDITORÃA FUNCIONAL (audit_logs)
+LOGGING TÉCNICO (Monolog)            ≠           AUDITORÍA FUNCIONAL (audit_logs)
 ----------------------------------               -----------------------------------
-* Archivo: storage/logs/laravel.log              * Tabla relacional: audit_logs en MySQL
-* Excepciones no controladas, fallos             * Trazabilidad de operaciones de negocio
-  de base de datos, stack traces de error.         realizadas por usuarios y actores.
-* Destinado a ingenieros de software.            * Destinado a administradores y gobernanza.
+* Destino: storage/logs/laravel.log              * Tabla relacional en MySQL
+* Errores de PHP, excepciones no                 * Trazabilidad de operaciones de negocio
+  capturadas, trazas de depuración.                ejecutadas por actores identificados.
+* Público: Ingenieros de software y DevOps.      * Público: Administradores del CMS y auditoría.
 ```
 
-### Arquitectura de la Tabla `audit_logs`:
-- `id`: `BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY`
-- `actor_type`: Tipo de actor (`HUMAN_USER`, `SYSTEM`, `SERVICE`, `API_CLIENT`)
-- `actor_id`: ID del actor o usuario que ejecutÃ³ la acciÃ³n (nullable para acciones del sistema)
-- `action`: Verbo de negocio (`created`, `updated`, `deleted`, `restored`, `login_success`, `login_failed`)
-- `domain`: Dominio afectado (`Tour`, `Destination`, `Setting`, `User`, `Role`, `Media`)
-- `auditable_type`: Nombre de clase de la entidad intervenida (`App\Domains\Tour\Models\Tour`)
-- `auditable_id`: Clave primaria del registro intervenido
-- `old_values`: Snapshot JSON de los valores antes de la modificaciÃ³n
-- `new_values`: Snapshot JSON de los valores posteriores al cambio
-- `ip_address`: DirecciÃ³n IP (anÃ³nima/hasheada si las regulaciones locales lo exigen)
-- `user_agent`: Cabecera User-Agent del cliente
-- `correlation_id`: Identificador UUIDv4 para trazar la solicitud de extremo a extremo
-- `created_at`: Marca temporal exacta en UTC
+### Principios de la Auditoría Funcional:
+1. **Eventos Significativos de Dominio:** Registra creaciones, mutaciones críticas, eliminaciones, cambios de permisos y accesos administrativos.
+2. **Privacidad y Seguridad Estricta:**
+   > **REGLA VINCULANTE:** Queda terminantemente prohibido registrar en la auditoría contraseñas, hashes, tokens de autenticación, datos sensibles de pago o credenciales secretas.
+3. **Inmutabilidad:** La tabla de auditoría sólo admite operaciones `INSERT`. Queda prohibido modificar o eliminar registros de auditoría funcional.
+4. **Diseño No Congelado Prematuramente:** La definición exacta de campos y metadatos se ajustará en la microfase del dominio `Audit`, asegurando compatibilidad con actores (`HUMAN_USER`, `SYSTEM`, `SERVICE`, `INTEGRATION`).
 
 ---
 
-## 2. Controles de Seguridad Obligatorios en el Backend
+## 2. Controles de Seguridad en el Backend
 
-1. **InyecciÃ³n SQL:** Mitigada al 100% mediante el uso de Prepared Statements y Parameter Binding obligatorio a travÃ©s de Eloquent y Query Builder de Laravel 13.
-2. **Cross-Site Request Forgery (CSRF):** Protegido mediante tokens aleatorios validados por el middleware `ValidateCsrfToken` en todas las peticiones `POST`, `PUT`, `PATCH` y `DELETE`.
+1. **Inyección SQL:** Prevenida al 100% mediante el uso exclusivo de Parameter Binding y Prepared Statements provistos por Eloquent y Query Builder de Laravel.
+2. **Cross-Site Request Forgery (CSRF):** Protegido en peticiones estatales mediante el middleware nativo `ValidateCsrfToken` con rotación segura de tokens en sesión.
 3. **Cross-Site Scripting (XSS):**
-   - En vistas pÃºblicas Blade SSR: Escape contextual nativo `{{ $data }}`.
-   - En frontend administrativo Vue: Data binding reactivo `{{ }}` que trata el texto como nodo de texto DOM seguro.
-   - Para contenido enriquecido HTML permitido (descripciones de tours): SanitizaciÃ³n mediante lista blanca estricta en el backend antes de persistir.
-4. **ProtecciÃ³n contra Fuerza Bruta y Rate Limiting:**
-   - Endpoint de autenticaciÃ³n protegido mediante `RateLimiter::for('login')` (mÃ¡ximo 5 intentos por minuto por combinaciÃ³n de IP/usuario, con bloqueo exponencial).
-   - Endpoints pÃºblicos de formularios y API protegidos por lÃ­mites de peticiones por minuto.
-5. **Carga Segura de Archivos (Biblioteca de Medios):**
-   - ValidaciÃ³n estricta del tipo MIME real mediante la extensiÃ³n `fileinfo` (`finfo_file`), no por la extensiÃ³n declarada en la cabecera del cliente.
-   - Lista blanca de extensiones permitidas (`jpg`, `jpeg`, `png`, `webp`, `avif`, `pdf`).
-   - Renombrado de archivos mediante UUIDv4 o hash SHA-256 para evitar colisiones y ataques de Path Traversal (`../../`).
-   - Bloqueo de ejecuciÃ³n de scripts en `/public/uploads/` mediante directivas de servidor Apache.
-6. **Cabeceras HTTP de Seguridad:** InyecciÃ³n de `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin` y polÃ­ticas de Content-Security-Policy (CSP) en producciÃ³n.
+   - Vistas públicas Blade (SSR): Escape contextual automático mediante `{{ $variable }}`.
+   - SPA Administrativa (Vue 3): Interpolación reactiva de texto por defecto. Sanitización estricta por lista blanca en backend para contenido HTML de editores enriquecidos.
+4. **Credenciales y Criptografía:**
+   - Contraseñas almacenadas con algoritmos resistentes: `Argon2id` o `Bcrypt` con factores de trabajo seguros.
+   - Prohibición de almacenamiento de tokens o credenciales en `localStorage`/`sessionStorage` para el panel administrativo.
+5. **Rate Limiting y Fuerza Bruta:**
+   - Límites estrictos en endpoints de autenticación mediante `RateLimiter::for('login')` (máximo 5 intentos por minuto por IP/cuenta con bloqueo incremental).
+6. **Carga Segura de Archivos:**
+   - Validación obligatoria de tipo MIME en backend vía `finfo_file` (no confiar en la cabecera enviada por el cliente).
+   - Lista blanca de extensiones permitidas.
+   - Generación de nombres de archivo aleatorios/hasheados para prevenir Path Traversal (`../`).
+   - Prevención de ejecución de scripts en directorios de carga en Apache/Nginx.
+7. **Cabeceras HTTP de Seguridad:** Inyección de `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin` y directivas de seguridad para producción.
 
 ---
 
-## 3. Convenciones Oficiales de la API TF CMS (`/api/v1/`)
+## 3. Convenciones de API: Distinción entre Endpoints Internos y API Pública
 
-Toda comunicaciÃ³n JSON entre el frontend administrativo y el backend se rige bajo un contrato REST estandarizado:
+Se delimita formalmente la naturaleza de las interfaces HTTP:
 
-### 3.1 Envelope EstÃ¡ndar de Respuesta Exitosa (`HTTP 200 / 201`)
-```json
-{
-  "success": true,
-  "status": 200,
-  "message": "Recurso obtenido exitosamente",
-  "data": {},
-  "meta": {
-    "correlation_id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
-    "timestamp": "2026-10-05T23:45:00Z",
-    "pagination": {
-      "current_page": 1,
-      "per_page": 15,
-      "total": 45,
-      "last_page": 3
-    }
-  },
-  "errors": null
-}
-```
+### 3.1 Endpoints Internos del Admin (SPA First-Party)
+- Son endpoints JSON directos orientados a la experiencia del panel administrativo (`/admin/api/...` o rutas internas de administración).
+- No requieren obligatoriamente el prefijo ni el versionado rígido `/api/v1/`.
+- Priorizan rendimiento, tipado y respuestas directas alineadas a los FormRequests y Resources de Laravel.
 
-### 3.2 Envelope EstÃ¡ndar de Error (`HTTP 400 / 401 / 403 / 404 / 422 / 500`)
-```json
-{
-  "success": false,
-  "status": 422,
-  "message": "Los datos proporcionados no son vÃ¡lidos.",
-  "data": null,
-  "meta": {
-    "correlation_id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
-    "timestamp": "2026-10-05T23:45:00Z"
-  },
-  "errors": {
-    "title": ["El tÃ­tulo del tour es obligatorio."],
-    "slug": ["El slug ingresado ya existe."]
-  }
-}
-```
+### 3.2 API Pública y Externa (`PROPUESTO`)
+- Destinada a consumo externo desacoplado o integraciones autorizadas.
+- Se propone el versionado estándar bajo `/api/v1/`.
+- No se congela un envelope universal rígido para todos los casos de forma prematura; la estructura de payloads y metadatos (paginación, correlación) se formalizará cuando se implemente la capa de exposición externa.
 
 ---
 
-## 4. Frontera Generacional e IntegraciÃ³n Futura con TravelFlow Next
+## 4. Frontera Generacional e Integración Futura con TravelFlow Next
 
-- **Frontera vinculante:** TF CMS es un producto autÃ³nomo. No comparte cÃ³digo, sesiones, tablas ni contratos con la generaciÃ³n legacy (Travel Flow v1, TFP, TFL).
-- **TravelFlow Next (TFN):** Proyecto futuro no implementado.
-- Durante esta fase y las subsiguientes no se inventan endpoints ni tokens de TFN.
-- La arquitectura queda desacoplada para admitir un futuro adaptador (`TravelFlowNextAdapter`) implementado Ãºnicamente tras contar con un contrato formal de API firmado por la DirecciÃ³n TÃ©cnica.
+1. **Separación Generacional Estricta:**
+   - TravelFlow CMS (TF CMS) es un producto independiente de nueva generación.
+   - Queda totalmente desvinculado de la generación legacy (Travel Flow v1, TFP, TFL).
+2. **TravelFlow Next (TFN, TFNP, TFNL):**
+   - Son proyectos futuros independientes que actualmente **NO EXISTEN**.
+   - **Clasificación:** `FUTURO` / `PENDIENTE DE TRAVELFLOW NEXT`.
+   - **Prohibición:** Se elimina cualquier concepto de adaptador prematuro (`TravelFlowNextAdapter`), mocks de prueba, endpoints inventados o esquemas anticipados. No se implementará código de integración hasta que existan contratos de ingeniería formales aprobados por la Dirección Técnica.

@@ -1,110 +1,126 @@
-﻿# Identidad, AutenticaciÃ³n y AutorizaciÃ³n (RBAC) â€” TF CMS
+# Identidad, Autenticación y Autorización (RBAC) — TF CMS
 
 **Documento:** `docs/arquitectura/identidad-autenticacion-rbac.md`
-**Estado:** `PROPUESTO` (Sujeto a aprobaciÃ³n formal de ChatGPT)
-**VersiÃ³n:** 1.0 â€” Fase 0C
+**Estado:** `DEFINIDO` (Identidad desacoplada, RBAC propio dinámico, Menú ≠ Autorización y Protocolo Orlando) / `PROPUESTO PARA APROBACIÓN FINAL` (Sanctum Stateful Session/Cookie Auth)
+**Versión:** 2.0 — Fase 0C.1B
 
 ---
 
-## 1. Desacoplamiento de Identidad: Persona â‰  Usuario â‰  Actor
+## 1. Desacoplamiento de Identidad: Persona ≠ Usuario ≠ Actor
 
-Se establece un modelo transversal limpio que evita confundir datos biogrÃ¡ficos con credenciales de acceso al sistema:
+Se establece un modelo conceptual y transversal limpio que evita confundir la identidad biográfica humana con las credenciales de acceso técnico al sistema:
 
 ```text
-       â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-       â”‚        PERSONA         â”‚ â”€â”€â”€ Identidad humana real (Nombre, Apellidos,
-       â”‚   (Datos Humanos)      â”‚     Documento, TelÃ©fono, Foto, BiografÃ­a editorial)
-       â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                   â”‚ 0..1
-                   â–¼
-       â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-       â”‚        USUARIO         â”‚ â”€â”€â”€ Credencial de acceso (Email/Login, Password Hash,
-       â”‚   (Cuenta de Acceso)   â”‚     Estado, MFA, Rol asignado, SesiÃ³n activa)
-       â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                   â”‚
-                   â–¼
-       â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-       â”‚     ROL Y PERMISOS     â”‚ â”€â”€â”€ Capacidades operativas autorizadas
-       â”‚      (RBAC Core)       â”‚
-       â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+       ┌────────────────────────┐
+       │        PERSONA         │ ─── Identidad humana real (Nombre, Apellidos,
+       │   (Datos Humanos)      │     Documento, Teléfono, Foto, Biografía editorial)
+       └───────────┬────────────┘
+                   │ 0..1  (Relación desacoplada, NO congelada a 1:1 físico rígido)
+                   ▼
+       ┌────────────────────────┐
+       │        USUARIO         │ ─── Credencial de acceso (Email/Login, Password Hash,
+       │   (Cuenta de Acceso)   │     Estado, MFA, Sesión activa)
+       └───────────┬────────────┘
+                   │ N:M
+                   ▼
+       ┌────────────────────────┐
+       │     ROLES Y PERMISOS   │ ─── Capacidades operativas autorizadas
+       │      (RBAC Core)       │
+       └────────────────────────┘
 ```
 
-### Ventajas del Modelo:
-1. **Personas sin acceso:** Un guÃ­a turÃ­stico, un autor de blog o un conductor puede existir como `Persona` (para figurar en la ficha de un tour o post) sin necesidad de tener un `Usuario` con credenciales de login al CMS.
-2. **Privacidad y GDPR / Habeas Data:** Facilita la anonimizaciÃ³n o actualizaciÃ³n de datos personales sin romper claves forÃ¡neas de autorÃ­a histÃ³rica.
-3. **MÃºltiples perfiles futuros:** Una persona puede asumir diferentes roles en el ecosistema sin duplicar su identidad biogrÃ¡fica.
-4. **Estado provisional de `users`:** La tabla por defecto de Laravel 13 (`users`) se utilizarÃ¡ como base de infraestructura de autenticaciÃ³n, vinculÃ¡ndose mediante `persona_id` a la tabla de personas en la microfase autorizada.
+### Principios y Reglas de Desacoplamiento:
+1. **Sin Congelamiento 1:1 Físico Rígido:** La relación conceptual entre `Persona` y `Usuario` es flexible y desacoplada:
+   - **Personas sin Usuario:** Un guía turístico, autor de contenido o chofer puede existir como `Persona` (para figurar en itinerarios o artículos editoriales) sin requerir una cuenta de usuario con credenciales de acceso al CMS.
+   - **Usuarios sin Persona obligatoria:** Cuentas administrativas o técnicas iniciales no requieren estar atadas forzosamente a una ficha biográfica humana completa para operar.
+2. **Privacidad y Protección de Datos (GDPR / Habeas Data):** Permite anonimizar, archivar o actualizar datos personales biográficos sin romper integridad referencial ni historial de auditoría de cuentas.
+3. **Múltiples Perfiles Futuros:** Una persona podrá vincularse a distintos roles o registros dentro del ecosistema sin duplicar su identidad biográfica.
+4. **Infraestructura Base de `users`:** La tabla estándar de Laravel 13 (`users`) se preserva como base de autenticación y se conectará de forma desacoplada con el dominio de personas cuando corresponda.
 
 ---
 
-## 2. TipologÃ­a de Actores del Sistema
+## 2. Tipología Oficial de Actores del Sistema
 
-TF CMS clasifica a los actores que interactÃºan con el backend en 4 categorÃ­as explÃ­citas:
+TF CMS clasifica a los actores que interactúan con el backend en 4 categorías formales:
 
-1. **`HUMAN_USER`:** Usuario humano autenticado mediante interfaz web o panel administrativo.
-2. **`SYSTEM`:** Operaciones autÃ³nomas del sistema (ej. ejecuciÃ³n de tareas programadas en el Scheduler, auto-limpieza de cache).
-3. **`SERVICE`:** Procesos de backend desacoplados o workers de colas.
-4. **`API_CLIENT / INTEGRATION`:** Clientes externos autenticados mediante tokens criptogrÃ¡ficos especÃ­ficos o firmas HMAC (ej. futura integraciÃ³n con TravelFlow Next). **Prohibido crear usuarios humanos ficticios con contraseÃ±as falsas para integraciones tÃ©cnicas.**
+1. **`HUMAN_USER` (o `USER`):** Usuario humano autenticado mediante la interfaz web o el panel administrativo del CMS.
+2. **`SYSTEM`:** Operaciones autónomas del sistema (ej. ejecución de tareas programadas en el Laravel Scheduler, limpieza de logs, mantenimiento interno).
+3. **`SERVICE`:** Procesos de backend desacoplados, workers de colas o tareas de procesamiento asíncrono.
+4. **`INTEGRATION / API_CLIENT`:** Clientes o sistemas externos autenticados mediante tokens criptográficos específicos o firmas seguras.
+   > **REGLA VINCULANTE:** Queda estrictamente prohibido crear usuarios humanos ficticios con contraseñas falsas para representar servicios técnicos o integraciones externas.
 
 ---
 
-## 3. AutenticaciÃ³n Administrativa: Opciones y RecomendaciÃ³n
+## 3. Autenticación Administrativa: Laravel Sanctum Stateful (`PROPUESTO PARA APROBACIÓN FINAL`)
 
-Se analizÃ³ la estrategia de autenticaciÃ³n para el panel administrativo en Vue 3 alojado en el mismo origen (`https://app.tf-cms.test`):
+Para la SPA administrativa desarrollada en Vue 3 y servida bajo el mismo origen (`https://app.tf-cms.test`), la estrategia oficial rectificada es:
 
-| Criterio | OpciÃ³n A: Laravel Stateful Session Auth (Recomendada) | OpciÃ³n B: Laravel Sanctum Tokens (Bearer) | OpciÃ³n C: JWT Stateless Personalizado |
+### Mecanismo Oficial:
+- **Laravel Sanctum en modo Stateful Cookie/Session Authentication:**
+  - Emite cookies de sesión encriptadas con atributos estrictos: `HttpOnly`, `Secure` y `SameSite=Strict` o `Lax`.
+  - Protección CSRF nativa y obligatoria mediante cookie `XSRF-TOKEN` y cabecera HTTP `X-XSRF-TOKEN`.
+  - Sin emisión de Bearer tokens para el panel administrativo first-party.
+  - Cero persistencia de tokens de autenticación en el cliente.
+
+### Prohibición Estricta de Almacenamiento Inseguro:
+> **PROHIBICIÓN TAJANTE:** Queda terminantemente prohibido almacenar credenciales, tokens de acceso o secretos del Admin en `localStorage` o `sessionStorage`. La sesión se mantiene exclusivamente a través de cookies de sesión `HttpOnly` gestionadas por el navegador y verificadas por el backend.
+
+### Comparativa Arquitectónica:
+
+| Criterio | Sanctum Stateful Session/Cookie (Propuesto) | Bearer Tokens en Headers | JWT Stateless Personalizado |
 | :--- | :--- | :--- | :--- |
-| **Mecanismo** | Cookies encriptadas HttpOnly, Secure, SameSite=Strict + X-XSRF-TOKEN | Bearer Token en cabecera HTTP `Authorization` | JSON Web Tokens firmados |
-| **Almacenamiento en Cliente** | Gestionado por el navegador (Inaccesible por JavaScript) | `localStorage` o memoria (Vulnerable a robo por XSS) | `localStorage` o memoria |
-| **ProtecciÃ³n CSRF** | Nativa mediante middleware `ValidateCsrfToken` de Laravel | Requiere endpoints de cookies o tokens dedicados | Sin protecciÃ³n CSRF nativa |
-| **RevocaciÃ³n Inmediata** | DestrucciÃ³n instantÃ¡nea en la tabla `sessions` de MySQL | Requiere eliminar token en base de datos | DifÃ­cil de revocar sin blacklist |
-| **Complejidad y Dependencias**| **Cero paquetes adicionales**; 100% nativo de Laravel 13 | Requiere `laravel/sanctum` | Alta complejidad de mantenimiento |
-| **Seguridad General** | **MÃ¡xima** para aplicaciones same-origin | Media (riesgo de persistencia insegura) | Media/Baja |
-
-### RecomendaciÃ³n TÃ©cnica: OpciÃ³n A (Stateful Session Auth Nativa)
-Para el panel administrativo Vue 3 servido bajo el mismo dominio de Laravel, **la autenticaciÃ³n por sesiÃ³n stateful nativa de Laravel es la mÃ¡s segura, robusta y eficiente**. Elimina la necesidad de instalar paquetes externos adicionales y protege las credenciales contra ataques XSS al utilizar cookies con flag `HttpOnly`.
+| **Mecanismo** | Cookies encriptadas HttpOnly + CSRF | Bearer Token en cabecera `Authorization` | JWT firmado en cabecera |
+| **Almacenamiento Cliente** | Cookie gestionada por navegador (Inaccesible por JS) | `localStorage` o memoria (Vulnerable a XSS) | `localStorage` o memoria (Vulnerable a XSS) |
+| **Protección CSRF** | Nativa mediante `ValidateCsrfToken` | Requiere mecanismos adicionales | Inexistente por defecto |
+| **Revocación Inmediata** | Instantánea invalidando la sesión en backend | Requiere borrado de token en DB | Compleja (requiere blacklist) |
+| **Seguridad General** | **Máxima para SPAs first-party same-origin** | Media (alto riesgo de exfiltración) | Media / Baja |
 
 ---
 
-## 4. AutorizaciÃ³n y RBAC (Role-Based Access Control)
+## 4. Autorización y RBAC Dinámico Propio (`DEFINIDO`)
 
-Se compararon tres enfoques para el control de acceso:
+Se adopta un modelo RBAC propio, dinámico y desacoplado, descartando paquetes externos pesados como `spatie/laravel-permission`:
 
-| Factor | OpciÃ³n 1: Laravel Nativo (Gates & Policies) | OpciÃ³n 2: Paquete `spatie/laravel-permission` | OpciÃ³n 3: Modelo RBAC Propio sobre Gates (Recomendada) |
-| :--- | :--- | :--- | :--- |
-| **Dependencias** | Ninguna | Paquete externo de terceros | **Ninguna (cÃ³digo propio de TF CMS)** |
-| **Flexibilidad en DB** | EstÃ¡tico en cÃ³digo (Gates manuales) | DinÃ¡mico en DB con tablas preconfiguradas | **Totalmente dinÃ¡mico en DB**, adaptado a TF CMS |
-| **Cache de Permisos** | N/A | Cache por etiquetas | **Cache integrado en driver de aplicaciÃ³n** |
-| **AuditorÃ­a de Roles** | Manual | Compleja de extender | **Integrada nativamente con `audit_logs`** |
-| **Curva de Aprendizaje**| Baja | Media | **Baja** (consume la interfaz estÃ¡ndar `$user->can()`) |
+### Estructura Relacional (N:M):
+```text
+USUARIOS (users)
+       │ N
+       ▼ M
+ROLES (roles) ──────────────┐
+       │ N                  │ Soporte multi-rol por usuario
+       ▼ M                  │ (user_roles)
+PERMISOS (permissions) ◄────┘
+```
 
-### RecomendaciÃ³n TÃ©cnica: OpciÃ³n 3 (RBAC Propio Ligero Integrado con Gates)
-Implementar una estructura limpia de tablas relacionales:
-- `roles` (`id`, `name`, `slug`, `description`, `is_system`)
-- `permissions` (`id`, `name`, `slug`, `domain`, `description`)
-- `role_permissions` (`role_id`, `permission_id`)
-- `user_roles` (`user_id`, `role_id`)
+- **`roles`:** (`id`, `name`, `slug`, `description`, `is_system`, `created_at`, `updated_at`)
+- **`permissions`:** (`id`, `name`, `slug`, `domain`, `description`, `created_at`, `updated_at`)
+- **`role_permissions`:** (`role_id`, `permission_id`)
+- **`user_roles`:** (`user_id`, `role_id`) — Permite asignar múltiples roles a un usuario.
 
-En el `AppServiceProvider`, registrar dinÃ¡micamente los permisos en el `Gate` de Laravel. AsÃ­, toda la autorizaciÃ³n se comprueba mediante las funciones estÃ¡ndar del framework (`$user->can('tour.create')`, `@can`, o middleware de rutas `can:tour.create`), sin arrastrar dependencias pesadas de terceros.
+### Integración con Laravel Core:
+- Registro dinámico de permisos en el `Gate` de Laravel a través de Service Providers.
+- Comprobación nativa estándar en controladores, FormRequests y vistas: `$user->can('tour.create')`, políticas (`Policies`) y middleware de ruta (`can:...`).
+- Cache inteligente de permisos en el driver de cache de la aplicación, invalidado automáticamente al mutar roles o permisos.
 
 ---
 
-## 5. Regla Permanente: El MenÃº NO es AutorizaciÃ³n
+## 5. Regla Permanente: El Menú NO es Autorización (`DEFINIDO Y VINCULANTE`)
 
 > **PRINCIPIO VINCULANTE:**
-> *Ocultar una opciÃ³n del menÃº en la interfaz visual NO autoriza ni desautoriza una operaciÃ³n.*
+> *Ocultar una opción del menú en la interfaz visual NO autoriza ni desautoriza una operación. Ocultar es ergonomía (UX); la autorización es un mandato estricto del backend.*
 
-1. El frontend administrativo (Vue 3) consultarÃ¡ los permisos del usuario para decidir si muestra u oculta botones de navegaciÃ³n, Ãºnicamente por ergonomÃ­a y experiencia de usuario (UX).
-2. **El backend de Laravel 13 valida obligatoriamente la autorizaciÃ³n en cada endpoint** mediante Middleware y FormRequests/Policies.
-3. Cualquier intento de invocaciÃ³n manual directa a una ruta de la API sin el permiso requerido responderÃ¡ ineludiblemente con **`HTTP 403 Forbidden`**.
+1. **UX Ergonomía:** El frontend administrativo (Vue 3) oculta o muestra botones y enlaces según los permisos del usuario para evitar frustración visual.
+2. **Validación Backend Obligatoria:** Todo endpoint interno de la API administrativa valida ineludiblemente la autorización del actor mediante Middleware y Policies/FormRequests.
+3. **Respuesta Forzosa:** Cualquier llamada HTTP directa no autorizada responderá taxativamente con **`HTTP 403 Forbidden`**.
 
 ---
 
-## 6. PolÃ­tica Permanente de Acceso Temporal para Orlando (Apartados 42 al 54)
+## 6. Protocolo Permanente de Acceso Temporal para Orlando (Reglas 42 al 54 — `DEFINIDO Y VINCULANTE`)
 
-Conforme a la instrucciÃ³n oficial vinculante, se consolida la norma permanente para todas las fases de implementaciÃ³n que introduzcan componentes navegables:
+Se consolida la norma obligatoria para todas las fases de implementación que entreguen módulos navegables:
 
-1. **ActivaciÃ³n:** A partir de la primera microfase en que exista autenticaciÃ³n funcional y panel navegable, el informe de Gemini entregarÃ¡ obligatoriamente la secciÃ³n `ACCESO TEMPORAL DE VERIFICACIÃ“N`.
-2. **Naturaleza:** Cuenta humana temporal exclusiva de desarrollo local, con contraseÃ±a generada aleatoriamente y hasheada (Argon2id/Bcrypt), **nunca versionada en Git ni expuesta en texto plano**.
-3. **Flujos a Comprobar:** Gemini indicarÃ¡ con precisiÃ³n quÃ© pantallas, botones, modales y respuestas debe validar Orlando manualmente desde su navegador.
-4. **Criterio de Cierre Visual:** Toda entrega visual quedarÃ¡ registrada como `PENDIENTE DE VALIDACIÃ“N VISUAL DE ORLANDO`. La fase no podrÃ¡ cerrarse hasta contar con la conformidad explÃ­cita de Orlando tras su prueba humana.
+1. **Activación Condicionada:** La obligación se activa a partir de la primera microfase técnica en que exista autenticación funcional y panel navegable.
+2. **Fase 0C.1B Exenta de Credenciales:** Durante la presente fase documental **NO se crean credenciales, usuarios ni vistas de login**.
+3. **Naturaleza del Acceso Temporal:** En las fases aplicables, se generará una cuenta humana temporal local con contraseña aleatoria y hasheada (Argon2id/Bcrypt), **nunca versionada en Git ni expuesta en texto plano en repositorios**.
+4. **Flujos a Comprobar:** Gemini detallará en su informe las URLs, pantallas y acciones exactas a verificar manualmente por Orlando desde el navegador.
+5. **Criterio de Aprobación Visual:** Toda entrega con interfaz quedará registrada como `PENDIENTE DE VALIDACIÓN VISUAL DE ORLANDO`. La fase no se considerará cerrada hasta contar con su confirmación expresa.

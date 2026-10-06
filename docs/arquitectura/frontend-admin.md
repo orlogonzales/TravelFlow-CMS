@@ -1,110 +1,144 @@
-﻿# Frontend Administrativo, Frontend Público y Tooling — TF CMS
+# Frontend Administrativo, Frontend Público y Tooling — TF CMS
 
 **Documento:** `docs/arquitectura/frontend-admin.md`
-**Estado:** `DEFINIDO` (Bootstrap 5 y descarte de Tailwind fijados por Dirección Técnica)
-**Versión:** 2.0 — Fase 0C.1
+**Estado:** `DEFINIDO Y VINCULANTE` (Bootstrap 5.3.8 versión base oficial, TF Design System, Skeleton Loaders, Descarte de Tailwind y Fetch API)
+**Versión:** 2.1 — Fase 0C.1B
 
 ---
 
 ## 1. Arquitectura del Frontend Administrativo (Panel de Control)
 
-El panel administrativo de TravelFlow CMS se estructurará como una **Single Page Application en Vue 3**, alojada en `resources/admin/` y compilada mediante Vite hacia `public/assets/admin/`, comunicándose con el backend a través de endpoints REST en `/api/v1/` protegidos por sesiones stateful:
+El panel administrativo de TravelFlow CMS es una **Single Page Application en Vue 3 first-party**, alojada dentro de la estructura de Laravel en `resources/admin/` y compilada mediante Vite hacia `public/assets/admin/`, comunicándose con endpoints JSON internos del backend:
 
 ```text
 Laravel 13
-    +
++
 Vue 3 (Composition API con <script setup>)
-    +
++
 TypeScript
-    +
-Pinia (Estado reactivo global)
-    +
++
+Pinia (Gestión de estado reactivo global)
++
 Vue Router (Navegación SPA con lazy loading)
-    +
-Vite (Motor de build rápido)
-    +
-Bootstrap 5 (Infraestructura CSS / Componentes base)
-    +
-TF Design System (Sistema visual y componentes oficiales del producto)
-    +
++
+Vite (Motor de build rápido y HMR)
++
+Bootstrap 5.3.8 (Infraestructura CSS / Componentes base)
++
+TF Design System (Sistema visual y componentes oficiales de TravelFlow)
++
 Font Awesome (Sistema principal de iconografía)
 ```
 
 ---
 
-## 2. Decisión Vinculante de Framework CSS: Bootstrap 5 DEFINIDO / Tailwind DESCARTADO
+## 2. Decisión Vinculante: Bootstrap 5.3.8 DEFINIDO / Tailwind DESCARTADO
 
 Por decisión de Producto y Dirección Técnica:
 
-### 2.1 Bootstrap 5 (`DEFINIDO`)
-- **Rol:** Infraestructura CSS base y rejilla responsive del panel administrativo.
-- **Principio:** Bootstrap 5 provee el andamiaje, pero **NO define la identidad visual final** de TravelFlow CMS.
-- La identidad visual pertenece exclusivamente al **TF Design System**.
+### 2.1 Bootstrap 5.3.8 (`DEFINIDO Y VINCULANTE`)
+- **Versión Oficial Inicial:** **Bootstrap 5.3.8** es la versión base exacta de infraestructura CSS para TravelFlow CMS.
+- **Versión Controlada y Reproducible:** Durante la futura implementación técnica frontend, se instalará explícitamente dentro de la rama controlada `5.3.8` y el archivo de bloqueo (`package-lock.json`) garantizará instalaciones reproducibles.
+- **Prohibición de Actualizaciones Automáticas:** Queda prohibido utilizar comodines o rangos permisivos en `package.json` que habiliten actualizaciones mayores automáticas. Cualquier migración futura de versión deberá ser un cambio técnico planificado que verifique:
+  - Compatibilidad de componentes.
+  - Comportamiento de JavaScript y Vue.
+  - Integridad del TF Design System.
+  - Diseño responsive y accesibilidad.
+  - Proceso de build y ausencia de regresión visual.
 
 ### 2.2 Tailwind CSS (`DESCARTADO`)
-- **Estado:** Totalmente descartado para TF CMS.
-- **Tratamiento de dependencias en `package.json`:** Las dependencias actuales `@tailwindcss/vite` y `tailwindcss` se clasifican como:
+- **Estado:** Totalmente descartado de la arquitectura oficial de TF CMS. No coexistirá con Bootstrap en el Admin.
+- **Tratamiento de Residuos del Skeleton:** Las referencias a Tailwind existentes en `package.json` se clasifican formalmente como:
   ```text
   DEPENDENCIA HEREDADA DEL SKELETON
   PENDIENTE DE RETIRO CONTROLADO
   ```
-  No se eliminan en la Fase 0C.1 para mantener la naturaleza puramente documental de esta microfase. Su desinstalación se ejecutará de forma verificada (`npm install`, `npm run build`) en la microfase dedicada a frontend.
+- **Regla de Fase:** No se alteran ni eliminan en la presente Fase 0C.1B para preservar su carácter estrictamente documental. Su remoción se ejecutará en la microfase dedicada a tooling frontend.
 
 ---
 
-## 3. No Confundir Bootstrap con TF Design System
+## 3. Jerarquía Visual: TF Design System sobre Bootstrap 5.3.8
 
-Se prohíbe que los módulos del CMS se construyan como una colección desordenada de clases e inputs Bootstrap genéricos.
+Queda terminantemente prohibido construir el panel con apariencia Bootstrap genérica. Bootstrap 5.3.8 actúa únicamente como infraestructura subyacente:
 
 ```text
-Bootstrap 5 (Infraestructura base / Grid / Utilities)
-       ↓
-TF DESIGN SYSTEM (Tokens de diseño propios, coherencia y UX)
-       ↓
-Componentes Oficiales:
-TfButton, TfModal, TfInput, TfSelect, TfSwitch, TfCheckbox,
-TfTable, TfTabs, TfBadge, TfChip, TfSkeleton, TfToast, TfPagination
-       ↓
+Bootstrap 5.3.8 (Infraestructura base / Rejilla / Utilidades)
+        ↓
+TF DESIGN SYSTEM (Identidad corporativa, tokens de diseño y coherencia UX)
+        ↓
+Componentes TF Oficiales
+(TfButton, TfModal, TfInput, TfSelect, TfSwitch, TfCheckbox,
+ TfTable, TfTabs, TfBadge, TfChip, TfToast, TfPagination, etc.)
+        ↓
 Módulos de Negocio TF CMS (Tour Editor, Builder, Media Library, etc.)
 ```
 
-El **TF Design System** controla:
-- Paleta cromática corporativa y modo oscuro/claro.
-- Tipografía y jerarquía visual.
-- Espaciados estandarizados (escala basada en 4px/8px).
-- Radios de borde, elevaciones y sombras.
-- Estados de interacción y transiciones.
-- Skeletons de carga fluida durante llamadas remotas.
-- Patrón UX obligatorio: `Botón -> Modal -> Formulario -> Backend -> Toast Feedback -> Cierre y Refresco Asíncrono`.
+El **TF Design System** gobierna:
+- Tokens de diseño: Paleta cromática corporativa, tipografía, escalas de espaciado (4px/8px).
+- Radios de borde, elevaciones, estados de interacción y transiciones.
+- Patrón UX estándar: `Acción -> Modal -> Formulario -> Backend -> Notificación Toast -> Cierre y Actualización Asíncrona`.
 
 ---
 
-## 4. Font Awesome: Sistema Oficial de Iconografía
+## 4. Skeleton Loaders y Patrón Asíncrono (`DEFINIDO`)
 
-- **Estado:** `DEFINIDO`.
-- Sistema exclusivo de iconografía para la interfaz administrativa y componentes core.
-- Se encapsula en el componente `<TfIcon>` del Design System para mapear nombres semánticos (ej. `tour`, `itinerary`, `settings`) y respetar estrictamente el licenciamiento Free (sin introducir accidentalmente dependencias Pro).
+### 4.1 Skeleton Loaders
+Los estados de carga estructural (**Skeleton Loaders**) son obligatorios y se construirán sobre los mecanismos nativos de **Bootstrap 5.3.8** (especialmente `placeholders` y clases utilitarias), encapsulados por el TF Design System:
+
+```text
+Bootstrap 5.3.8 (placeholders & utilities)
+        ↓
+TF Design System
+        ↓
+Componentes Skeleton Específicos:
+TfSkeleton, TfSkeletonText, TfSkeletonCard, TfSkeletonTable, TfSkeletonForm, TfSkeletonStats
+```
+
+### 4.2 Patrón Asíncrono Obligatorio
+Para toda vista o componente que realice peticiones remotas se aplica la cadena:
+```text
+FETCH + VUE REACTIVITY + BOOTSTRAP 5.3.8 + TF SKELETON
+```
+
+Estados visuales requeridos:
+- **`LOADING`:** Muestra la estructura de `TfSkeleton` correspondiente.
+- **`SUCCESS`:** Renderiza el contenido real reactivo.
+- **`EMPTY`:** Despliega `TfEmptyState` con acción de recuperación o creación.
+- **`ERROR`:** Despliega `TfAlert` con opción explícita de reintento (`Retry`).
+
+*Regla de Uso:* No utilizar skeletons indiscriminadamente cuando la operación sea imperceptible o carezca de estructura previa que proyectar.
 
 ---
 
-## 5. Frontend Público: Arquitectura SSR Desacoplada
+## 5. Iconografía Oficial: Font Awesome (`DEFINIDO`)
 
-Para la web pública visible para viajeros y motores de búsqueda:
-- **Tecnología Principal:** **PHP SSR (Server-Side Rendering)** integrado en el **Theme Engine**.
-- **Regla Estricta:** La web pública **NO será una SPA**.
-- **Desacoplamiento Total:** Los Temas públicos **NO dependen de Bootstrap ni del bundle administrativo**.
-  - Cada Tema público es soberano en su diseño y estructura visual.
-  - Los temas públicos utilizarán **CSS Custom Properties (Design Tokens)** declarados en su manifiesto `theme.json`.
-  - Un tema puede utilizar su propio CSS o framework ligero sin contaminar el núcleo de TF CMS.
-- **Objetivos Clave:**
-  1. **100% Crawlabilidad SEO:** Indexación inmediata sin depender de ejecución JavaScript en cliente.
-  2. **Core Web Vitals:** TTFB < 200ms y FCP instantáneo.
-  3. **Mejora Progresiva:** JS ligero nativo únicamente para componentes interactivos puntuales (carruseles, selector de fechas, modales de reserva).
+- Font Awesome es el sistema oficial de iconografía del panel de administración.
+- Se implementará encapsulado mediante el componente `<TfIcon>` del Design System, garantizando uso de la variante Free sin dependencias Pro no licenciadas.
 
 ---
 
-## 6. Cliente HTTP: Fetch Nativo vs Axios
+## 6. Frontend Público: Arquitectura SSR y Theme Engine Independiente
 
-- **Evaluación:** Axios agrega dependencia externa redundante.
-- **Recomendación (`PROPUESTO`):** Utilizar **Fetch API nativo** encapsulado en un composable TypeScript ligero (`useApi()`) que gestione cookies de sesión `HttpOnly`, cabeceras `X-XSRF-TOKEN` y redirección automática ante `401 Unauthorized`.
-- La dependencia `axios` heredada del esqueleto de Laravel 13 será retirada de forma controlada en la microfase de frontend.
+Para el portal público accesible para viajeros y motores de búsqueda:
+- **Tecnología:** Laravel SSR (Blade) dentro del **Theme Engine** con **Mejora Progresiva** (JS nativo puntual).
+- **No es una SPA:** La web pública no utiliza arquitectura SPA.
+- **Independencia Total de Estilos:**
+  ```text
+  ADMIN TF CMS        ──►  Bootstrap 5.3.8 + TF Design System
+  WEB PÚBLICA (THEMES) ──►  Theme Engine + Tecnología visual propia del Tema
+  ```
+  El Theme Engine público no está forzado a utilizar Bootstrap 5.3.8 ni las hojas de estilo del Admin. Cada tema define sus tokens propios mediante `theme.json`.
+- **Rendimiento:** Prioridad a Core Web Vitals, crawlabilidad total para SEO y renderizado rápido medido empíricamente en laboratorio (sin compromisos arbitrarios no verificados).
+
+---
+
+## 7. Cliente HTTP: Fetch Nativo (`DEFINIDO`) vs Axios
+
+- **Cliente Oficial:** **Fetch API nativo** encapsulado en composables TypeScript (`useApi()`), gestionando cookies de sesión `HttpOnly` y protección CSRF (`X-XSRF-TOKEN`).
+- **Axios:** Clasificado como deuda del skeleton de Laravel, pendiente de retiro controlado en la microfase frontend.
+
+---
+
+## 8. Regla de Fase 0C.1B: Prohibición de Modificaciones en Código Frontend
+
+> **ADVERTENCIA VINCULANTE:** Durante la Fase 0C.1B NO se instala Bootstrap 5.3.8, NO se edita `package.json`, NO se altera `package-lock.json`, NO se toca Vite ni Vue, y NO se crean componentes de diseño. La presente fase es estrictamente documental.

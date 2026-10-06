@@ -1,136 +1,112 @@
-﻿# Arquitectura Modular Laravel y Flujo de Responsabilidades â€” TF CMS
+# Arquitectura Modular Laravel y Flujo de Responsabilidades — TF CMS
 
 **Documento:** `docs/arquitectura/arquitectura-laravel.md`
-**Estado:** `PROPUESTO` (Sujeto a aprobaciÃ³n formal de ChatGPT)
-**VersiÃ³n:** 1.0 â€” Fase 0C
+**Estado:** `DEFINIDO` (Arquitectura modular por dominios aprobada por Dirección Técnica)
+**Versión:** 2.0 — Fase 0C.1B
 
 ---
 
-## 1. Comparativa de Arquitecturas Modulares para TF CMS
+## 1. Arquitectura Modular por Dominios (`DEFINIDO`)
 
-Se evaluaron tres enfoques para estructurar el backend sobre Laravel 13.x:
-
-| Criterio | OpciÃ³n A: Convencional por Tipo | OpciÃ³n B: Modular por Dominios en `app/` (Recomendada) | OpciÃ³n C: Paquetes / HMVC Aislados |
-| :--- | :--- | :--- | :--- |
-| **Estructura** | `app/Models/`, `app/Controllers/`, etc. | `app/Domains/{Domain}/` + `app/Http/` centralizado | MÃ³dulos totalmente independientes con ServiceProviders propios |
-| **CohesiÃ³n de Dominio** | Baja (archivos de Tours dispersos en 6 carpetas) | **Alta** (Tours agrupa sus Models, Actions, DTOs y Policies) | Muy Alta (aislamiento extremo) |
-| **Escalabilidad (1000+ tours)** | Tiende al caos con 80+ modelos en un solo directorio | **Excelente**; cada dominio gestiona su complejidad | Compleja por cruce de dependencias |
-| **Acoplamiento al Framework** | 100% nativo | **100% nativo** (autoloader estÃ¡ndar PSR-4 `App\`) | Requiere paquetes externos (ej. `nwidart/laravel-modules`) |
-| **Curva de Onboarding** | Muy baja | **Baja**; sigue convenciones estÃ¡ndar de Laravel | Alta; sobrecarga de configuraciÃ³n |
-| **Riesgo de SobreingenierÃ­a**| MÃ­nimo, pero genera deuda tÃ©cnica rÃ¡pida | **Nulo**; pragmatismo equilibrado | **Alto**; ceremony innecesario |
-
-### RecomendaciÃ³n TÃ©cnica: OpciÃ³n B (Pragmatismo por Dominios)
-
-Se recomienda organizar el cÃ³digo de negocio en **Dominios Cohesivos dentro de `app/Domains/`**, manteniendo la capa HTTP (`app/Http/`) organizada por contexto de entrega (Admin API vs Web PÃºblica):
+Se establece formalmente la organización del backend de TravelFlow CMS bajo una **arquitectura modular pragmática orientada a dominios/capacidades dentro de `app/Domains/`**:
 
 ```text
 app/
-â”œâ”€â”€ Domains/                    # LÃ³gica de Negocio y Persistencia por Dominio
-â”‚   â”œâ”€â”€ Tour/                   # Dominio Tours
-â”‚   â”‚   â”œâ”€â”€ Actions/            # Operaciones de escritura (CreateTour, PublishTour)
-â”‚   â”‚   â”œâ”€â”€ Data/               # Data Transfer Objects (TourData)
-â”‚   â”‚   â”œâ”€â”€ Models/             # Modelos Eloquent (Tour, TourItinerary, TourPrice)
-â”‚   â”‚   â”œâ”€â”€ Policies/           # AutorizaciÃ³n granular (TourPolicy)
-â”‚   â”‚   â””â”€â”€ Queries/            # Consultas complejas y facetas (TourCatalogQuery)
-â”‚   â”œâ”€â”€ Destination/            # Dominio Destinos
-â”‚   â”œâ”€â”€ Experience/             # Dominio Experiencias
-â”‚   â”œâ”€â”€ Content/                # PÃ¡ginas estÃ¡ticas y dinÃ¡micas, Blog
-â”‚   â”œâ”€â”€ Media/                  # Biblioteca de Medios y Variantes
-â”‚   â”œâ”€â”€ Builder/                # Motor TF Builder (AST JSON, Schemas)
-â”‚   â”œâ”€â”€ Theme/                  # Motor de Temas y Manifests
-â”‚   â”œâ”€â”€ Multilingual/           # Motor de InternacionalizaciÃ³n
-â”‚   â”œâ”€â”€ Seo/                    # Metadatos, Schemas JSON-LD, Sitemaps
-â”‚   â”œâ”€â”€ Setting/                # ConfiguraciÃ³n editable de Empresa y Sistema
-â”‚   â”œâ”€â”€ User/                   # Identidad, Usuarios, Roles y Permisos
-â”‚   â””â”€â”€ Audit/                  # Trazabilidad y Logs Funcionales
-â”‚
-â”œâ”€â”€ Http/                       # Capa de Entrada y Transporte HTTP
-â”‚   â”œâ”€â”€ Controllers/
-â”‚   â”‚   â”œâ”€â”€ Api/V1/             # Endpoints JSON para el Panel Administrativo Vue
-â”‚   â”‚   â”‚   â”œâ”€â”€ TourController.php
-â”‚   â”‚   â”‚   â””â”€â”€ ...
-â”‚   â”‚   â””â”€â”€ Web/                # Controladores SSR para la Web PÃºblica
-â”‚   â”‚       â”œâ”€â”€ TourWebController.php
-â”‚   â”‚       â””â”€â”€ ...
-â”‚   â”œâ”€â”€ Middleware/             # Pipeline de Seguridad, Auth, CSRF, RBAC
-â”‚   â”œâ”€â”€ Requests/               # Form Requests tipados para validaciÃ³n de entrada
-â”‚   â””â”€â”€ Resources/              # JsonResources / DTOs de salida para la API
-â”‚
-â”œâ”€â”€ Providers/                  # Service Providers de Laravel
-â””â”€â”€ Support/                    # Helpers, Traits transversales y Excepciones base
+├── Domains/                    # Módulos de Dominio (Cohesión de Negocio)
+│   ├── Tour/                   # Dominio Tours e Itinerarios
+│   ├── Destination/            # Dominio Destinos
+│   ├── Experience/             # Dominio Experiencias
+│   ├── Content/                # Páginas estáticas y Blog
+│   ├── Media/                  # Biblioteca de Medios
+│   ├── Builder/                # Motor TF Builder
+│   ├── Theme/                  # Motor de Temas
+│   ├── Multilingual/           # Motor de Internacionalización
+│   ├── Seo/                    # Metadatos y Sitemaps
+│   ├── Setting/                # Configuración de Empresa y Sistema
+│   ├── User/                   # Identidad, Usuarios, Roles y Permisos
+│   └── Audit/                  # Trazabilidad y Logs Funcionales
+│
+├── Http/                       # Capa de Entrada y Transporte HTTP
+│   ├── Controllers/
+│   │   ├── Admin/              # Endpoints internos para la SPA Administrativa
+│   │   └── Web/                # Controladores SSR para la Web Pública
+│   ├── Middleware/             # Pipeline de Seguridad, Auth, CSRF, RBAC
+│   ├── Requests/               # Form Requests tipados para validación de entrada
+│   └── Resources/              # JsonResources de transformación
+│
+├── Providers/                  # Service Providers de Laravel
+└── Support/                    # Helpers y DTOs transversales
 ```
+
+### Principios de Implementación:
+1. **Sin Paquetes Aislados Innecesarios:** Queda descartado el uso de paquetes externos como `nwidart/laravel-modules`. Los dominios son carpetas estructuradas que aprovechan el autoloading estándar PSR-4 de Composer (`App\Domains\...`).
+2. **Creación Incremental:** No se crearán carpetas vacías por adelantado. Cada dominio se materializará físicamente en su microfase correspondiente.
 
 ---
 
-## 2. Flujo de Responsabilidades (Rule of Responsibilities)
+## 2. Flujo de Responsabilidades (Eliminación de Reglas Arbitrarias)
 
-Principio rector:
-> *Una capa existe porque tiene una responsabilidad real, no porque el diagrama se vea mÃ¡s empresarial.*
+Se elimina cualquier regla rígida basada en conteo de líneas (como "Controller < 40 líneas"). El principio rector es:
+
+> **EL CONTROLADOR DEBE SER DELGADO POR RESPONSABILIDAD, NO POR UN NÚMERO ARBITRARIO DE LÍNEAS.**
 
 ```text
-  [HTTP Request]
-        â”‚
-        â–¼
-   [Route & Middleware]   â”€â”€â–º Seguridad, CSRF, Rate Limiting, AutenticaciÃ³n y AutorizaciÃ³n preliminar
-        â”‚
-        â–¼
-   [Form Request]         â”€â”€â–º ValidaciÃ³n tipada estricta, reglas de negocio de entrada y sanitizaciÃ³n
-        â”‚
-        â–¼
-   [Controller]           â”€â”€â–º OrquestaciÃ³n pura (extrae datos validados, invoca Action, devuelve Response).
-        â”‚                     Regla: Menos de 40 lÃ­neas por mÃ©todo; sin lÃ³gica de negocio ni SQL.
-        â–¼
-   [Action / Service]     â”€â”€â–º LÃ³gica de negocio soberana, transacciones ACID, disparo de eventos
-        â”‚
-        â–¼
-   [Model / QueryObject]  â”€â”€â–º Persistencia Eloquent o consultas complejas optimizadas
-        â”‚
-        â–¼
-   [Resource / DTO]       â”€â”€â–º TransformaciÃ³n de salida desacoplada del esquema fÃ­sico de base de datos
-        â”‚
-        â–¼
-  [JSON / SSR Response]
+HTTP Request ──► Route ──► Middleware (Auth, CSRF, RateLimit, RBAC)
+     ──► Form Request (Validación y sanitización tipada)
+     ──► Controller (Orquestación HTTP pura)
+     ──► Action / Service (Reglas de negocio, transacciones atómicas)
+     ──► Model / Query (Acceso a datos y persistencia en MySQL)
+     ──► Resource / Response (Transformación de salida)
+     ──► HTTP Response
 ```
 
-### Matriz de Responsabilidades Claras:
-- **Controller:** Orquestador de transporte HTTP. Prohibido ejecutar transacciones directas o construir consultas complejas en Ã©l.
-- **Form Request:** Barrera de entrada. Si los datos son invÃ¡lidos, la peticiÃ³n se detiene inmediatamente con `422 Unprocessable Entity`.
-- **Action:** Clase invocable de responsabilidad Ãºnica (`CreateTourAction`, `TranslateTourAction`). Ideal para operaciones de escritura con efectos colaterales.
-- **Service:** Agrupador de lÃ³gica para operaciones que coordinan mÃºltiples dominios o servicios externos.
-- **DTO (Data Transfer Object):** Estructuras inmutables tipadas (PHP 8.3 `readonly class`) para mover datos limpios entre capas sin manipular arrays asociativos genÃ©ricos.
-- **Policy:** Reglas de autorizaciÃ³n ligadas a la identidad del usuario y la entidad a intervenir.
-- **Job:** Tarea asÃ­ncrona enviada a la cola para no bloquear el ciclo de vida de la peticiÃ³n HTTP.
+### Reglas de Existencia de Capas:
+- **Sin Ceremony Innecesario:** Una capa (Action, Service, DTO, Repository, Query Object, Event o Job) existirá **únicamente cuando tenga una responsabilidad real demostrable**, no por cumplir un patrón visual.
+- **Controller:** Orquesta la petición HTTP, invoca la operación de dominio correspondiente y retorna la respuesta. No contiene lógica de negocio pesada ni consultas SQL complejas.
+- **Form Request:** Valida y sanitiza las entradas. Si los datos son inválidos, detiene el flujo antes de tocar el dominio.
+- **Action / Service:** Acciones de responsabilidad única para operaciones de escritura con efectos colaterales; Servicios para coordinación entre múltiples dominios.
+- **DTOs:** Utilizados cuando la complejidad o estructura del payload justifique tipado estricto inmutable (`readonly class`).
 
 ---
 
-## 3. Convenciones de Eventos del Dominio
+## 3. Política de Transacciones Atómicas
 
-Regla de oro:
-> *No convertir cada operaciÃ³n CRUD en un Event Bus.*
+Se elimina la regla simplista de "más de una escritura = transacción". Se sustituye por el principio de ingeniería:
 
-Los eventos de Laravel (`Event` + `Listener`) se reservan exclusivamente para desacoplar **efectos secundarios no crÃ­ticos para la respuesta inmediata**:
-- **Uso vÃ¡lido:** `TourPublishedEvent` â”€â”€â–º Invalida cache editorial, actualiza `sitemap.xml`, notifica a webhooks autorizados.
-- **Uso invÃ¡lido:** Disparar eventos para guardar un registro hijo dentro de la misma transacciÃ³n (genera trazabilidad opaca y dificulta el debugging).
+> **TODA OPERACIÓN QUE REQUIERA ATOMICIDAD ENTRE MODIFICACIONES RELACIONADAS DEBE EJECUTARSE DENTRO DE UNA TRANSACCIÓN.**
+
+La necesidad de atomicidad para garantizar consistencia e integridad referencial en MySQL (ej. crear un Tour y sus Días de Itinerario correspondientes), y no el mero conteo de queries, es lo que determina el uso de `DB::transaction()`.
 
 ---
 
-## 4. Estrategia de ConfiguraciÃ³n (`.env` vs `config/` vs `settings`)
+## 4. Convenciones de Eventos del Dominio
 
-Se establece una estricta jerarquÃ­a de configuraciÃ³n en 3 niveles:
+- Se utilizarán eventos y listeners de Laravel para reacciones relevantes que justifiquen desacoplamiento (ej. `TourPublished -> [Invalidar Cache, Actualizar Sitemap]`).
+- **Prohibido:** Convertir operaciones CRUD rutinarias en un Event Bus ceremonial por defecto.
 
-```text
-1. VARIABLES DE ENTORNO (.env)
-   â””â”€â”€ Infraestructura pura, credenciales de servidor, secrets de APIs, URLs de hosts.
-       No editable por el usuario. Inmutable en tiempo de ejecuciÃ³n.
+---
 
-2. CONFIGURACIÃ“N TÃ‰CNICA (config/*.php)
-   â””â”€â”€ Opciones de framework, drivers por defecto (session, cache, queue), lÃ­mites tÃ©cnicos.
-       Controladas por el equipo de ingenierÃ­a en cÃ³digo versionado.
+## 5. Scheduler de Laravel
 
-3. AJUSTES EDITABLES DE TF CMS (Tabla settings / Domain Setting)
-   â””â”€â”€ ConfiguraciÃ³n de producto gestionable por Orlando/Administrador desde el panel:
-       * Datos de la empresa (RazÃ³n social, RUC/TaxID, direcciÃ³n, telÃ©fonos).
-       * Canales de contacto (WhatsApp oficial, enlaces a redes sociales).
-       * Ajustes SEO globales (Meta title por defecto, OpenGraph fallback).
-       * Moneda base referencial del CMS y formatos de fecha.
-```
+- Se utilizará la abstracción estándar de **Laravel Scheduler** mediante una única llamada periódica de cron:
+  ```bash
+  * * * * * cd /ruta/al/proyecto && php artisan schedule:run >> /dev/null 2>&1
+  ```
+- **Corrección de reglas globales:** Se eliminan las directivas globales indiscriminadas.
+  - `withoutOverlapping()` se aplicará **solamente cuando el solapamiento de ejecuciones represente un riesgo real** de concurrencia o duplicación.
+  - `runInBackground()` se utilizará **solamente cuando sea técnicamente aplicable** en el entorno y aporte una ventaja real demostrable.
+
+---
+
+## 6. Queues y Cache
+
+- **Queues:** El driver `database` (sobre MySQL `jobs`) es el candidato inicial para compatibilidad con hosting convencional. No se asume la existencia obligatoria de un worker permanente en todos los entornos; la estrategia operacional final se adaptará al despliegue real.
+- **Cache:** Arquitectura desacoplada del driver. TF CMS funcionará plenamente sobre almacenamiento en archivos (`file`). **Redis es una optimización opcional futura**, nunca una dependencia obligatoria.
+
+---
+
+## 7. Jerarquía de Configuración
+
+1. **Variables de Entorno (`.env`):** Parámetros de infraestructura, credenciales locales y secrets (inmutables por el usuario final).
+2. **Configuración Técnica (`config/*.php`):** Opciones estáticas del framework gestionadas por ingeniería.
+3. **Ajustes de Producto (Tabla `settings`):** Configuración editable de negocio gestionada por Orlando desde el panel (Razón social, RUC, WhatsApp, moneda base, fallbacks SEO).
