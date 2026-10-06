@@ -63,3 +63,15 @@ body {
 .bi-fullscreen-exit::before {
   content: "\f066"; // fa-compress
 }
+
+// 7. Integración de Layout AdminLTE 4 Login v2 en SPA Vue (FASE 1B.1B)
+// Permite que la caja .login-box de LteAuthLayout actúe como flex-item directo de body.login-page,
+// garantizando centrado vertical y horizontal sin columnas ni franjas intermedias.
+body.login-page {
+  background-color: var(--bs-body-secondary, #e9ecef);
+
+  #app,
+  #tf-app-root {
+    display: contents;
+  }
+}

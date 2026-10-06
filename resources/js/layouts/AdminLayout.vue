@@ -85,7 +85,7 @@
       </template>
 
       <template #footer-right>
-        <span class="text-muted small">v1.0.0-alpha (Fase 1B.1)</span>
+        <span class="text-muted small">v1.0.0-alpha</span>
       </template>
     </LteDashboardLayout>
   </div>

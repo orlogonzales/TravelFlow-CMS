@@ -1,79 +1,79 @@
 <template>
-  <div class="tf-login-page min-vh-100 d-flex align-items-center justify-content-center p-3">
-    <LteAuthLayout auth-type="login" variant="v2">
-      <!-- Logo Oficial de TravelFlow CMS -->
-      <template #logo>
-        <div class="d-flex align-items-center justify-content-center gap-2 text-decoration-none py-1">
-          <i class="fa-solid fa-compass text-primary fs-2" aria-hidden="true"></i>
-          <span class="fs-4 fw-bold text-body">TravelFlow <span class="fw-normal text-primary">CMS</span></span>
-        </div>
-      </template>
+  <LteAuthLayout auth-type="login" variant="v2" logo-href="/login">
+    <!-- Logo Oficial de TravelFlow CMS en Card Header -->
+    <template #logo>
+      <div class="d-flex align-items-center justify-content-center gap-2 text-decoration-none py-1">
+        <i class="fa-solid fa-compass text-primary fs-3" aria-hidden="true"></i>
+        <span class="fs-4 fw-bold text-body">TravelFlow <span class="fw-normal text-primary">CMS</span></span>
+      </div>
+    </template>
 
-      <!-- Cuerpo del Formulario de Autenticación -->
-      <template #default>
-        <p class="login-box-msg text-muted small text-center mb-3">
-          Ingrese sus credenciales para acceder al panel
-        </p>
+    <!-- Cuerpo del Formulario de Autenticación -->
+    <template #default>
+      <p class="login-box-msg text-muted small text-center mb-3">
+        Ingrese sus credenciales para acceder al panel
+      </p>
 
-        <!-- Alerta de Error Global -->
-        <TfAlert
-          v-if="errorMessage"
-          variant="danger"
-          :message="errorMessage"
-          dismissible
-          @dismiss="errorMessage = ''"
+      <!-- Alerta de Error Global -->
+      <TfAlert
+        v-if="errorMessage"
+        variant="danger"
+        :message="errorMessage"
+        dismissible
+        @dismiss="errorMessage = ''"
+      />
+
+      <!-- Formulario Reactivo -->
+      <form novalidate @submit.prevent="handleSubmit">
+        <!-- Campo Email -->
+        <TfInput
+          id="login-email"
+          v-model="form.email"
+          type="email"
+          label="Correo electrónico"
+          placeholder="usuario@ejemplo.com"
+          autocomplete="email"
+          required
+          prefix-icon="fa-solid fa-envelope"
+          :error-message="errors.email"
+          :disabled="authStore.loading"
+          @blur="validateEmail"
         />
 
-        <!-- Formulario Reactivo -->
-        <form novalidate @submit.prevent="handleSubmit">
-          <!-- Campo Email -->
-          <TfInput
-            id="login-email"
-            v-model="form.email"
-            type="email"
-            label="Correo electrónico"
-            placeholder="usuario@ejemplo.com"
-            autocomplete="email"
-            required
-            prefix-icon="fa-solid fa-envelope"
-            :error-message="errors.email"
-            :disabled="authStore.loading"
-            @blur="validateEmail"
-          />
+        <!-- Campo Contraseña con Toggle Font Awesome -->
+        <TfInput
+          id="login-password"
+          v-model="form.password"
+          type="password"
+          label="Contraseña"
+          placeholder="••••••••"
+          autocomplete="current-password"
+          required
+          prefix-icon="fa-solid fa-lock"
+          :error-message="errors.password"
+          :disabled="authStore.loading"
+          :allow-toggle-password="true"
+          @blur="validatePassword"
+        />
 
-          <!-- Campo Contraseña con Toggle Font Awesome -->
-          <TfInput
-            id="login-password"
-            v-model="form.password"
-            type="password"
-            label="Contraseña"
-            placeholder="••••••••"
-            autocomplete="current-password"
-            required
-            prefix-icon="fa-solid fa-lock"
-            :error-message="errors.password"
-            :disabled="authStore.loading"
-            :allow-toggle-password="true"
-            @blur="validatePassword"
-          />
-
-          <!-- Checkbox Recordarme -->
-          <div class="d-flex align-items-center justify-content-between mb-4">
-            <div class="form-check">
-              <input
-                id="login-remember"
-                v-model="form.remember"
-                type="checkbox"
-                class="form-check-input"
-                :disabled="authStore.loading"
-              />
-              <label for="login-remember" class="form-check-label text-muted small user-select-none">
-                Recordarme en este equipo
-              </label>
-            </div>
+        <!-- Checkbox Recordarme -->
+        <div class="mb-4">
+          <div class="form-check">
+            <input
+              id="login-remember"
+              v-model="form.remember"
+              type="checkbox"
+              class="form-check-input"
+              :disabled="authStore.loading"
+            />
+            <label for="login-remember" class="form-check-label text-muted small user-select-none">
+              Recordarme en este equipo
+            </label>
           </div>
+        </div>
 
-          <!-- Botón de Envío -->
+        <!-- Botón de Envío Full Width -->
+        <div class="d-grid gap-2">
           <TfButton
             type="submit"
             variant="primary"
@@ -84,14 +84,14 @@
           >
             {{ authStore.loading ? 'Verificando acceso...' : 'Ingresar al sistema' }}
           </TfButton>
-        </form>
-
-        <div class="mt-4 pt-3 border-top text-center text-muted small">
-          <span>TravelFlow CMS &copy; {{ new Date().getFullYear() }} &bull; Acceso restringido</span>
         </div>
-      </template>
-    </LteAuthLayout>
-  </div>
+      </form>
+
+      <div class="mt-4 pt-3 border-top text-center text-muted small">
+        <span>TravelFlow CMS &copy; {{ new Date().getFullYear() }} &bull; Acceso restringido</span>
+      </div>
+    </template>
+  </LteAuthLayout>
 </template>
 
 <script setup lang="ts">
@@ -185,9 +185,3 @@ async function handleSubmit() {
   }
 }
 </script>
-
-<style scoped>
-.tf-login-page {
-  background-color: var(--bs-tertiary-bg, #f1f5f9);
-}
-</style>

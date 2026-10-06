@@ -6,7 +6,7 @@
     </label>
 
     <div :class="{ 'input-group': hasGroup }">
-      <span v-if="prefixIcon" class="input-group-text bg-white border-end-0 text-muted">
+      <span v-if="prefixIcon" class="input-group-text bg-body border-end-0 text-muted">
         <i :class="prefixIcon" aria-hidden="true"></i>
       </span>
 
@@ -33,7 +33,7 @@
       <button
         v-if="type === 'password' && allowTogglePassword"
         type="button"
-        class="btn btn-outline-secondary border-start-0 bg-white"
+        class="btn btn-outline-secondary border-start-0 bg-body"
         :class="{ 'is-invalid border-danger': !!errorMessage }"
         :aria-label="showPassword ? 'Ocultar contraseña' : 'Ver contraseña'"
         :title="showPassword ? 'Ocultar contraseña' : 'Ver contraseña'"

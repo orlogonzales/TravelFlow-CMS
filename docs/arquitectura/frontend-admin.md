@@ -1,8 +1,8 @@
 # Frontend Administrativo, Frontend Público y Tooling — TF CMS
 
 **Documento:** `docs/arquitectura/frontend-admin.md`
-**Estado:** `DEFINIDO Y VINCULANTE` (Bootstrap 5.3.8 versión base, AdminLTE 4 Vue shell administrativo, TF Design System, Font Awesome Free oficial con bridge CSS mínimo de 5 iconos, Descarte de Tailwind, Axios y Bootstrap Icons)
-**Versión:** 2.3 — Fase 1B.1A
+**Estado:** `DEFINIDO Y VINCULANTE` (Bootstrap 5.3.8 versión base, AdminLTE 4 Vue shell administrativo, TF Design System, Font Awesome Free oficial con bridge CSS mínimo de 5 iconos, AdminLTE 4 Login v2)
+**Versión:** 2.4 — Fase 1B.1B
 
 ---
 
@@ -195,7 +195,8 @@ En la **Fase 1B.1**, la Dirección Técnica homologa **AdminLTE 4 Vue (`@adminlt
   - `#topbar-end`: Selector de tema accesible (`TfThemeToggle.vue`) con opciones Claro / Oscuro / Automático (Sistema) usando Font Awesome Free y `useColorMode()`.
   - `#user-menu`: Menú de usuario con nombre, correo, rol activo y botón de cierre de sesión interactivo protegido con SweetAlert2.
 - **`LteAuthLayout` (`LoginView.vue`):**
-  - Shell oficial de autenticación (variante `v2`) con tarjeta centrada y branding TravelFlow CMS.
+  - Shell oficial de autenticación reproduciendo fielmente la composición y proporciones de **AdminLTE 4 Login Page v2**.
+  - Tarjeta centrada vertical y horizontalmente sobre fondo uniforme `bg-body-secondary` sin wrappers ni franjas intermedias (`display: contents` en `#app, #tf-app-root` bajo `body.login-page`).
   - Integra los componentes de diseño del TF Design System (`TfInput`, `TfButton`, `TfAlert`), alternador de contraseña, checkbox "Recordarme" y flujo CSRF Sanctum intacto.
 - **`DashboardView.vue`:**
   - Vista limpia y neutral de bienvenida para el operador.
