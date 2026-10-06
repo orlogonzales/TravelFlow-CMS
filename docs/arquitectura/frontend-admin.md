@@ -203,3 +203,28 @@ En la **Fase 1B.1**, la Dirección Técnica homologa **AdminLTE 4 Vue (`@adminlt
   - Tarjeta de estado de plataforma conectada con el backend.
   - Eliminados dumps técnicos de desarrollo (permisos JSON en bruto, banderas de debugging).
   - Prohibidos KPIs simulados, gráficas ficticias o datos inventados no respaldados por endpoints de dominio.
+
+---
+
+## 10. Base CRUD Reutilizable y Superficie de Personas (Fase 1C.1)
+
+En la **Fase 1C.1**, se extiende el TF Design System con componentes modulares ligeros basados en Bootstrap 5.3.8 y Font Awesome Free para dar soporte al patrón CRUD asíncrono sin recarga completa:
+
+### 10.1 Componentes del TF Design System Incorporados:
+- **`<TfModal>`:** Contenedor modal accesible con `Teleport` al `body`, gestión de foco, cierre con tecla ESC, bloqueo de scroll en body y ranuras tipadas (`#header`, `#default`, `#footer`).
+- **`<TfTable>`:** Tabla responsive desacoplada (`table`, `table-hover`, `align-middle`) con ordenamiento interactivo (indicadores visuales Font Awesome), soporte nativo de filas de carga mediante `<TfSkeleton>` y slots dinámicos de celda (`#cell-{key}`) y acciones (`#actions`). Cero librerías externas de DataTables.
+- **`<TfPagination>`:** Barra de paginación controlada con cálculo automático de rangos ("Mostrando X al Y de Z"), botones previo/siguiente y elipsis numérica inteligente.
+- **`<TfBadge>`:** Insignias de estado con compatibilidad plena para Dark Mode (`bg-*-subtle text-*-emphasis border`) y modos `dot` y `pill`.
+- **`<TfSelect>`:** Selector desplegable estilizado que reproduce la accesibilidad y el tratamiento de errores inline (`errorMessage`, `is-invalid`) de `<TfInput>`.
+- **`<TfEmptyState>`:** Componente de presentación para tablas sin datos o búsquedas sin resultados con iconografía Font Awesome Free y ranuras para acciones secundarias.
+
+### 10.2 Pantalla de Personas (`PersonasView.vue`):
+- Ubicación: `resources/js/views/admin/personas/PersonasView.vue`.
+- Ruta: `/admin/personas` protegida por autenticación y guard frontend.
+- Menú Lateral: Se activa inmediatamente en `AdminLayout.vue` bajo la sección "ADMINISTRACIÓN" cuando el usuario autenticado posee el permiso `personas.ver`.
+- Flujos Asíncronos:
+  - Búsqueda en tiempo real conectada a backend.
+  - Creación mediante modal con validación 422 inline y detección de duplicidad documental.
+  - Edición mediante modal con precarga remota respaldada por `<TfSkeleton>`.
+  - Ficha detallada mediante modal de consulta.
+  - Notificaciones de confirmación mediante SweetAlert2 toasts. Cero `window.location.reload()`.

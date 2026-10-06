@@ -124,3 +124,20 @@ Se consolida la norma obligatoria para todas las fases de implementación que en
 3. **Naturaleza del Acceso Temporal:** En las fases aplicables, se generará una cuenta humana temporal local con contraseña aleatoria y hasheada (Argon2id/Bcrypt), **nunca versionada en Git ni expuesta en texto plano en repositorios**.
 4. **Flujos a Comprobar:** Gemini detallará en su informe las URLs, pantallas y acciones exactas a verificar manualmente por Orlando desde el navegador.
 5. **Criterio de Aprobación Visual:** Toda entrega con interfaz quedará registrada como `PENDIENTE DE VALIDACIÓN VISUAL DE ORLANDO`. La fase no se considerará cerrada hasta contar con su confirmación expresa.
+
+---
+
+## 7. Módulo de Personas y Permisos Oficiales (Fase 1C.1)
+
+En la **Fase 1C.1**, se incorpora la administración del núcleo de identidades humanas (`Persona`):
+
+### 7.1 Catálogo de Permisos Incorporados:
+- **`personas.ver`:** Permite consultar el listado y fichas de personas (`GET /api/admin/personas`, `GET /api/admin/personas/{id}`).
+- **`personas.crear`:** Permite registrar nuevas identidades de personas (`POST /api/admin/personas`).
+- **`personas.editar`:** Permite actualizar datos y estado de personas (`PUT/PATCH /api/admin/personas/{id}`).
+
+> **REGLA DE GOBERNANZA VINCULANTE:**
+> - El rol de sistema `admin` recibe explícitamente estos permisos mediante la tabla `role_permissions` a través del seeder reproducible `RbacPermissionSeeder`. Ningún permiso es implícito ni concedido automáticamente por el slug del rol.
+> - Se preserva `Persona ≠ User`: la creación o edición de una `Persona` jamás crea ni muta cuentas de acceso `User`.
+> - Prohibido Hard Delete: No se expone `DELETE` para personas. Las transiciones operativas se manejan mediante el enum `PersonaStatus` (`activo`, `inactivo`, `archivado`).
+> - Detección de duplicidad documental: En `StorePersonaRequest` y `UpdatePersonaRequest`, si se suministra combinación de `tipo_documento` y `numero_documento` idéntica a una existente, se rechaza con `HTTP 422 Unprocessable Entity` para prevenir identidades duplicadas.

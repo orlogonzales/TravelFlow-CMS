@@ -108,18 +108,35 @@ const authStore = useAuthStore();
  * Menú estructural de navegación de la administración.
  * REGLA VINCULANTE: Solo contiene opciones reales y autorizadas (sin placeholders internos ni disabled ficticios).
  */
-const menuItems: MenuNode[] = [
-  {
-    type: 'header',
-    text: 'MENÚ PRINCIPAL',
-  },
-  {
-    type: 'item',
-    text: 'Dashboard',
-    href: '/admin',
-    icon: 'fa-solid fa-gauge-high',
-  },
-];
+const menuItems = computed<MenuNode[]>(() => {
+  const items: MenuNode[] = [
+    {
+      type: 'header',
+      text: 'MENÚ PRINCIPAL',
+    },
+    {
+      type: 'item',
+      text: 'Dashboard',
+      href: '/admin',
+      icon: 'fa-solid fa-gauge-high',
+    },
+  ];
+
+  if (authStore.hasPermission('personas.ver')) {
+    items.push({
+      type: 'header',
+      text: 'ADMINISTRACIÓN',
+    });
+    items.push({
+      type: 'item',
+      text: 'Personas',
+      href: '/admin/personas',
+      icon: 'fa-solid fa-address-card',
+    });
+  }
+
+  return items;
+});
 
 const topbarUser = computed<TopbarUser>(() => ({
   name: authStore.displayName || 'Usuario',

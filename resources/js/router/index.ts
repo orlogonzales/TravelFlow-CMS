@@ -38,6 +38,15 @@ const routes: RouteRecordRaw[] = [
           title: 'Panel Administrativo — TravelFlow CMS',
         },
       },
+      {
+        path: 'personas',
+        name: 'admin-personas',
+        component: () => import('@/views/admin/personas/PersonasView.vue'),
+        meta: {
+          requiresAuth: true,
+          title: 'Personas — TravelFlow CMS',
+        },
+      },
     ],
   },
   {

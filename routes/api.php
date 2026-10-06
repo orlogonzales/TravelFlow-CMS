@@ -55,4 +55,19 @@ Route::middleware(['web', 'auth:sanctum', 'active'])->group(function () {
             ],
         ]);
     })->middleware('can:admin.acceder');
+
+    // Administración de Personas (Fase 1C.1)
+    Route::prefix('admin/personas')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PersonaController::class, 'index'])
+            ->middleware('can:personas.ver');
+
+        Route::post('/', [\App\Http\Controllers\Admin\PersonaController::class, 'store'])
+            ->middleware('can:personas.crear');
+
+        Route::get('/{persona}', [\App\Http\Controllers\Admin\PersonaController::class, 'show'])
+            ->middleware('can:personas.ver');
+
+        Route::match(['put', 'patch'], '/{persona}', [\App\Http\Controllers\Admin\PersonaController::class, 'update'])
+            ->middleware('can:personas.editar');
+    });
 });
