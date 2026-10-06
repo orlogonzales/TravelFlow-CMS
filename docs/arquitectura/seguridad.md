@@ -1,4 +1,4 @@
-# Seguridad, AuditorÃ­a y Convenciones de API â€” TF CMS
+﻿# Seguridad, AuditorÃ­a y Convenciones de API â€” TF CMS
 
 **Documento:** `docs/arquitectura/seguridad.md`
 **Estado:** `PROPUESTO` (Sujeto a aprobaciÃ³n formal de ChatGPT)

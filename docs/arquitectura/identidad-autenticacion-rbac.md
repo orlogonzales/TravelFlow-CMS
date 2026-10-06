@@ -1,4 +1,4 @@
-# Identidad, AutenticaciÃ³n y AutorizaciÃ³n (RBAC) â€” TF CMS
+﻿# Identidad, AutenticaciÃ³n y AutorizaciÃ³n (RBAC) â€” TF CMS
 
 **Documento:** `docs/arquitectura/identidad-autenticacion-rbac.md`
 **Estado:** `PROPUESTO` (Sujeto a aprobaciÃ³n formal de ChatGPT)

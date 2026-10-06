@@ -1,4 +1,4 @@
-# Arquitectura Modular Laravel y Flujo de Responsabilidades â€” TF CMS
+﻿# Arquitectura Modular Laravel y Flujo de Responsabilidades â€” TF CMS
 
 **Documento:** `docs/arquitectura/arquitectura-laravel.md`
 **Estado:** `PROPUESTO` (Sujeto a aprobaciÃ³n formal de ChatGPT)

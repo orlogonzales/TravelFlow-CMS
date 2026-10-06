@@ -1,4 +1,4 @@
-# Mapa del Ecosistema y Frontera Generacional
+﻿# Mapa del Ecosistema y Frontera Generacional
 
 ## 1. ClasificaciÃ³n Generacional
 

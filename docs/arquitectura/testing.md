@@ -1,58 +1,76 @@
-# Estrategia Integral de Testing â€” TF CMS
+﻿# Estrategia Integral de Testing — TF CMS
 
 **Documento:** `docs/arquitectura/testing.md`
-**Estado:** `PROPUESTO` (Sujeto a aprobaciÃ³n formal de ChatGPT)
-**VersiÃ³n:** 1.0 â€” Fase 0C
+**Estado:** `DEFINIDO` (MySQL exclusivo y descarte total de SQLite fijados por Dirección Técnica)
+**Versión:** 2.0 — Fase 0C.1
 
 ---
 
-## 1. PirÃ¡mide de Pruebas de TF CMS
+## 1. Principio Vinculante de Consistencia de Entornos
 
-Se define una suite de pruebas automatizadas por capas, garantizando cobertura continua sin sobrecargar el tiempo de desarrollo:
+> **REGLA PERMANENTE DE INGENIERÍA:**
+> *No utilizar un motor de base de datos distinto en testing para simular el comportamiento que producción ejecutará sobre MySQL.*
 
-```text
-               / \
-              /   \
-             / E2E \           â”€â”€â”€ Playwright (Flujos crÃ­ticos: Login, Guardar Tour)
-            /â”€â”€â”€â”€â”€â”€â”€\
-           / Feature \         â”€â”€â”€ PHPUnit Feature Tests (API Endpoints, RBAC, FormRequests)
-          /â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€\
-         / Integration \       â”€â”€â”€ Pruebas de integraciÃ³n con base de datos real MySQL
-        /â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€\
-       /   Unit Tests    \     â”€â”€â”€ PHPUnit Unit Tests (Actions, DTOs, Helpers, Reglas de negocio)
-      /â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€\
-```
+Queda terminantemente descartado el uso de SQLite (incluyendo SQLite en memoria `:memory:` o archivos `.sqlite`) para homologar pruebas en TravelFlow CMS.
 
----
-
-## 2. Estrategia de Bases de Datos para Testing: SQLite vs MySQL Real
-
-Para evitar el grave riesgo de que **una suite que pase en SQLite oculte incompatibilidades o errores con MySQL**, se adopta un enfoque dual:
-
-### 2.1 Pruebas de Desarrollo RÃ¡pido y CI (SQLite `:memory:`)
-- **Uso:** Pruebas unitarias y de validaciÃ³n de controladores en tiempo de codificaciÃ³n Ã¡gil.
-- **ConfiguraciÃ³n:** Definida en `phpunit.xml` (`<env name="DB_CONNECTION" value="sqlite"/>`, `<env name="DB_DATABASE" value=":memory:"/>`).
-- **Ventaja:** EjecuciÃ³n en menos de 1 segundo para retroalimentaciÃ³n inmediata.
-- **Aislamiento:** Cada prueba corre dentro del trait `RefreshDatabase` o `DatabaseTransactions`.
-
-### 2.2 Pruebas de IntegraciÃ³n y Smoke Tests (MySQL Real `tf_cms_test`)
-- **Uso:** ValidaciÃ³n previa a la entrega de microfases y gates de cierre.
-- **Entorno:** Base de datos dedicada de pruebas en MySQL (`tf_cms_test`) con el mismo motor, versiÃ³n (MySQL 8.4) y collation (`utf8mb4_0900_ai_ci`) que el entorno local.
-- **VerificaciÃ³n:** Comprueba la sintaxis de tipos especÃ­ficos de MySQL (JSON queries, expresiones regulares, Ã­ndices espaciales de mapas turÃ­sticos).
+### Justificación de la Eliminación de SQLite:
+1. **Divergencias en tipos y funciones:** SQLite no emula con fidelidad el comportamiento de MySQL 8.4 en tipos JSON, constraints de claves foráneas, índices espaciales, bloqueos de concurrencia (`FOR UPDATE`) ni expresiones regulares.
+2. **Falsos positivos / negativos:** Una prueba que pasa en SQLite puede fallar en producción sobre MySQL por diferencias de collation o sintaxis SQL.
+3. **Consistencia total:**
+   ```text
+   DESARROLLO ──► MySQL (tf_cms)
+   TESTING     ──► MySQL (tf_cms_test)
+   STAGING     ──► MySQL
+   PRODUCCIÓN  ──► MySQL
+   ```
 
 ---
 
-## 3. TipologÃ­a de Pruebas Automatizadas
+## 2. Nueva Política de Pruebas Automatizadas
+
+Se define una suite rigurosa dividida por responsabilidades:
 
 1. **Unit Tests (Pruebas Unitarias):**
-   - ValidaciÃ³n aislada de DTOs, validadores personalizados, cÃ¡lculo de precios y duraciÃ³n de tours, formateadores de moneda e internacionalizaciÃ³n.
-2. **Feature Tests (Pruebas de Funcionalidad):**
-   - InvocaciÃ³n HTTP a endpoints de la API (`$this->postJson('/api/v1/tours', $data)`).
-   - VerificaciÃ³n de cÃ³digos de estado HTTP semÃ¡nticos (200, 201, 401, 403, 422).
-   - VerificaciÃ³n del envelope JSON estandarizado.
+   - **Sin base de datos cuando sea posible.**
+   - Pruebas aisladas y puras para Actions, DTOs, validadores, cálculo de tarifas, duraciones de tours, formateadores de moneda y utilidades.
+   - Ejecución ultrarrápida sin sobrecarga de I/O.
+2. **Feature & Database Tests:**
+   - **Ejecutadas estrictamente sobre MySQL `tf_cms_test`.**
+   - Validación de endpoints de la API REST (`/api/v1/`), FormRequests, respuestas JSON tipadas y persistencia real de modelos.
 3. **Authorization & Security Tests:**
-   - ComprobaciÃ³n de que usuarios sin el rol o permiso adecuado reciben `403 Forbidden`.
-   - Pruebas de rate limiting y bloqueo de fuerza bruta.
-   - VerificaciÃ³n de tokens CSRF.
-4. **Frontend Unit & Component Tests:**
-   - Pruebas de componentes Vue 3 del **TF Design System** mediante **Vitest** y `@vue/test-utils` (ej. renderizado correcto de `<TfButton>`, estados de `<TfSkeleton>`).
+   - **Ejecutadas sobre MySQL `tf_cms_test` cuando requieran persistencia.**
+   - Validación de Gates, Policies y respuesta `403 Forbidden` ante accesos no autorizados.
+4. **Integration Tests:**
+   - **Ejecutadas sobre MySQL `tf_cms_test`.**
+   - Verificación de migraciones, transacciones ACID, integridad referencial y bloqueos concurrentes.
+5. **Frontend Unit & Component Tests:**
+   - Pruebas de componentes Vue 3 del **TF Design System** (usando Vitest y `@vue/test-utils`).
+
+---
+
+## 3. Separación de Bases de Datos y Protección Contra Pruebas Destructivas
+
+### 3.1 Entornos Separados
+- **Base de Datos de Desarrollo:** `tf_cms` (MySQL 8.4.3). Contiene el estado local de trabajo.
+- **Base de Datos de Testing:** `tf_cms_test` (MySQL 8.4.3). Base de datos dedicada exclusivamente a la ejecución automatizada de pruebas con transacciones o migraciones controladas.
+
+### 3.2 Barrera de Seguridad Obligatoria
+Queda terminantemente prohibido ejecutar pruebas destructivas (`migrate:fresh`, `db:wipe`, borrado masivo) sobre `tf_cms`.
+- Cuando se configure formalmente la infraestructura de testing en su microfase correspondiente, se implementará un guard en el `TestCase` base de Laravel que abortará la ejecución de pruebas si la base de datos conectada no contiene el sufijo `_test` o no es explícitamente `tf_cms_test`.
+
+---
+
+## 4. Estado de `phpunit.xml`
+
+La configuración actual de `phpunit.xml` heredada del esqueleto de Laravel contiene provisionalmente:
+```xml
+<env name="DB_CONNECTION" value="sqlite"/>
+<env name="DB_DATABASE" value=":memory:"/>
+```
+- **Clasificación:**
+  ```text
+  CONFIGURACIÓN HEREDADA DEL SKELETON
+  PENDIENTE DE CORRECCIÓN CONTROLADA
+  ```
+- **Regla de 0C.1:** No se modifica `phpunit.xml` en esta microfase para preservar la naturaleza estrictamente documental de 0C.1.
+- Su actualización hacia la conexión dedicada MySQL `tf_cms_test` se realizará de forma controlada cuando se autorice la microfase de infraestructura de testing.
