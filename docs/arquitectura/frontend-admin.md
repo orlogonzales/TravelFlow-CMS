@@ -139,6 +139,21 @@ Para el portal público accesible para viajeros y motores de búsqueda:
 
 ---
 
-## 8. Regla de Fase 0C.1B: Prohibición de Modificaciones en Código Frontend
+## 8. Superficies y Componentes Implementados (Fase 1B)
 
-> **ADVERTENCIA VINCULANTE:** Durante la Fase 0C.1B NO se instala Bootstrap 5.3.8, NO se edita `package.json`, NO se altera `package-lock.json`, NO se toca Vite ni Vue, y NO se crean componentes de diseño. La presente fase es estrictamente documental.
+En la **Fase 1B**, el frontend administrativo materializa sus dos primeras superficies oficiales:
+
+### 8.1 Rutas y Superficies Iniciales
+- **`/login`:** Pantalla de autenticación oficial. Integra formulario accesible con validación reactiva, alternador de visibilidad de contraseña mediante Font Awesome (`fa-eye` / `fa-eye-slash`), soporte para "Recordarme" y retroalimentación de errores backend mediante `TfAlert`.
+- **`/admin`:** Raíz y shell estructural del panel administrativo. Contiene Sidebar con navegación base ("Inicio"), Header con botón de alternancia responsive y Menú de Usuario con iniciales, rol activo y acción de cierre de sesión protegida con SweetAlert2.
+
+### 8.2 Componentes TF Design System Activos
+- **`<TfButton>`:** Botón estilizado con soporte de variantes Bootstrap 5.3.8, estados de carga con spinner Font Awesome y anchos responsivos.
+- **`<TfInput>`:** Campo de formulario accesible con etiquetas asociadas, atributos `aria-*`, iconos prefijo y soporte nativo para mostrar/ocultar contraseñas.
+- **`<TfAlert>`:** Notificaciones de advertencia, error y éxito con iconografía tipada y opción de descarte.
+- **`<TfSkeleton>`:** Indicador de carga estructural basado en placeholders nativos de Bootstrap 5.3.8, desplegado durante la resolución de sesión (`/api/auth/me`) y consulta de recursos protegidos.
+
+### 8.3 Flujo de Navegación y Sesión
+- **Navigation Guard:** `router.beforeEach` consulta la sesión activa una sola vez al cargar la SPA. Si el usuario no está autenticado, redirige inmediatamente a `/login?redirect=...`. Si un usuario autenticado intenta acceder a `/login`, es redirigido a `/admin`.
+- **Auth Store:** Implementado con Pinia en `resources/js/stores/auth.ts`. Mantiene el perfil del usuario en memoria reactiva sin persistir credenciales ni tokens en `localStorage` o `sessionStorage`.
+- **Cliente HTTP:** Implementado en `resources/js/composables/useApi.ts` sobre Fetch API nativo, manejando la cookie CSRF `XSRF-TOKEN` y reconexión automática en caso de expiración (HTTP 419).

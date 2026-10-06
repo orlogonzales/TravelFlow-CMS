@@ -40,4 +40,19 @@ Route::middleware(['web', 'auth:sanctum', 'active'])->group(function () {
             'message' => 'Acceso autorizado al permiso usuarios.gestionar',
         ]);
     })->middleware('can:usuarios.gestionar');
+
+    // Recurso administrativo base protegido: requiere el permiso soberano admin.acceder
+    Route::get('/admin/shell-status', function () {
+        return response()->json([
+            'success' => true,
+            'message' => 'Infraestructura administrativa preparada correctamente.',
+            'data' => [
+                'status' => 'operational',
+                'app_name' => config('app.name', 'TravelFlow CMS'),
+                'environment' => config('app.env'),
+                'php_version' => PHP_VERSION,
+                'laravel_version' => app()->version(),
+            ],
+        ]);
+    })->middleware('can:admin.acceder');
 });
