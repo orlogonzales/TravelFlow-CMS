@@ -31,7 +31,9 @@ class UpdateUsuarioRequest extends FormRequest
 
     /**
      * Reglas de validación para modificación de datos base.
-     * REGLA VINCULANTE: NO procesa contraseñas, roles ni estado (segregación de privilegios).
+     * REGLA VINCULANTE: Únicamente el correo electrónico de acceso es modificable en datos base.
+     * La persona vinculada es inmutable en edición normal y users.name se deriva de la persona.
+     * NO procesa contraseñas, roles ni estado (segregación estricta de privilegios).
      *
      * @return array<string, mixed>
      */
@@ -42,14 +44,6 @@ class UpdateUsuarioRequest extends FormRequest
             : $this->route('usuario');
 
         return [
-            'persona_id' => [
-                'required',
-                'integer',
-                Rule::exists('personas', 'id')->where(function ($query) {
-                    $query->where('estado', PersonaStatus::ACTIVO->value);
-                }),
-                Rule::unique('users', 'persona_id')->ignore($userId),
-            ],
             'email' => [
                 'required',
                 'string',
@@ -57,20 +51,12 @@ class UpdateUsuarioRequest extends FormRequest
                 'max:255',
                 Rule::unique('users', 'email')->ignore($userId),
             ],
-            'name' => [
-                'nullable',
-                'string',
-                'max:255',
-            ],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'persona_id.required' => 'La persona vinculada es obligatoria.',
-            'persona_id.exists' => 'La persona especificada no existe o no se encuentra en estado activo.',
-            'persona_id.unique' => 'La persona ya se encuentra vinculada a otra cuenta de usuario.',
             'email.required' => 'El correo electrónico de acceso es obligatorio.',
             'email.email' => 'El correo electrónico debe ser válido.',
             'email.unique' => 'El correo electrónico ya se encuentra registrado por otra cuenta.',

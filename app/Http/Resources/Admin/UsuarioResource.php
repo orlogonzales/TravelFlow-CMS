@@ -19,9 +19,13 @@ class UsuarioResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $humanName = $this->relationLoaded('persona') && $this->persona
+            ? $this->persona->nombre_completo
+            : $this->name;
+
         return [
             'id' => $this->id,
-            'name' => $this->name,
+            'name' => $humanName,
             'email' => $this->email,
             'status' => $this->status instanceof \BackedEnum ? $this->status->value : (string) $this->status,
             'persona_id' => $this->persona_id,

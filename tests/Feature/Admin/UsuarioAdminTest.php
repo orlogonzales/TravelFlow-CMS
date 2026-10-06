@@ -378,7 +378,8 @@ class UsuarioAdminTest extends TestCase
     }
 
     /**
-     * Actualización base mediante PUT no altera contraseñas, roles ni estado.
+     * Actualización base mediante PUT solo permite modificar el email y no altera contraseñas, roles ni estado.
+     * users.name se sincroniza soberanamente desde la Persona vinculada y persona_id permanece inmutable.
      */
     public function test_update_base_information_does_not_modify_password_roles_or_status(): void
     {
@@ -401,17 +402,20 @@ class UsuarioAdminTest extends TestCase
 
         $response = $this->actingAs($this->adminUser, 'web')
             ->putJson("/api/admin/usuarios/{$targetUser->id}", [
-                'persona_id' => $nuevaPersona->id,
-                'name' => 'Carlos Modificado',
+                'persona_id' => $nuevaPersona->id, // Intento de reasignar persona
+                'name' => 'Nombre Hackeado',        // Intento de modificar nombre manualmente
                 'email' => 'carlos.modificado@test.local',
             ]);
 
         $response->assertStatus(200)
             ->assertJsonPath('data.email', 'carlos.modificado@test.local')
-            ->assertJsonPath('data.name', 'Carlos Modificado')
-            ->assertJsonPath('data.persona_id', $nuevaPersona->id);
+            ->assertJsonPath('data.name', 'Carlos Elegible') // Soberano desde Persona vinculada
+            ->assertJsonPath('data.persona_id', $this->testPersona->id); // Persona inmutable
 
         $targetUser->refresh();
+        $this->assertSame($this->testPersona->id, $targetUser->persona_id);
+        $this->assertSame('Carlos Elegible', $targetUser->name);
+        $this->assertSame('carlos.modificado@test.local', $targetUser->email);
         $this->assertSame(UserStatus::ACTIVE, $targetUser->status);
         $this->assertTrue(Hash::check('PasswordSegura2026!', $targetUser->password));
     }
@@ -562,9 +566,35 @@ class UsuarioAdminTest extends TestCase
     }
 
     /**
-     * Consulta asíncrona de personas elegibles retorna solo personas activas sin cuenta de usuario.
+     * Consulta asíncrona de personas elegibles es prohibida (403) para un usuario con solo usuarios.ver.
      */
-    public function test_personas_elegibles_endpoint_returns_only_unlinked_active_personas(): void
+    public function test_personas_elegibles_forbidden_without_usuarios_crear(): void
+    {
+        $viewerRole = Role::create([
+            'name' => 'Solo Lector',
+            'slug' => 'solo_lector',
+            'is_system' => false,
+        ]);
+        $viewerRole->givePermission(Permission::where('slug', 'usuarios.ver')->firstOrFail());
+
+        $viewer = User::create([
+            'name' => 'Lector Usuarios',
+            'email' => 'lector@test.local',
+            'password' => Hash::make('PasswordSegura2026!'),
+            'status' => UserStatus::ACTIVE,
+        ]);
+        $viewer->assignRole($viewerRole);
+
+        $this->actingAs($viewer, 'web')
+            ->getJson('/api/admin/usuarios/personas-elegibles')
+            ->assertStatus(403);
+    }
+
+    /**
+     * Consulta asíncrona de personas elegibles es permitida (200) para un usuario con usuarios.crear
+     * y retorna solo personas activas sin cuenta de usuario.
+     */
+    public function test_personas_elegibles_allowed_with_usuarios_crear(): void
     {
         $response = $this->actingAs($this->adminUser, 'web')
             ->getJson('/api/admin/usuarios/personas-elegibles');
@@ -581,12 +611,100 @@ class UsuarioAdminTest extends TestCase
             ]);
 
         $ids = collect($response->json('data'))->pluck('id')->all();
-
-        // Debe incluir a $this->testPersona (activa y sin cuenta)
         $this->assertContains($this->testPersona->id, $ids);
-
-        // NO debe incluir la persona del adminUser (ya vinculada)
         $this->assertNotContains($this->adminUser->persona_id, $ids);
+    }
+
+    /**
+     * Consulta asíncrona de roles disponibles es prohibida (403) para un usuario con solo usuarios.ver.
+     */
+    public function test_roles_disponibles_forbidden_without_usuarios_roles(): void
+    {
+        $viewerRole = Role::create([
+            'name' => 'Lector Simple',
+            'slug' => 'lector_simple',
+            'is_system' => false,
+        ]);
+        $viewerRole->givePermission(Permission::where('slug', 'usuarios.ver')->firstOrFail());
+
+        $viewer = User::create([
+            'name' => 'Lector Simple',
+            'email' => 'lectorsimple@test.local',
+            'password' => Hash::make('PasswordSegura2026!'),
+            'status' => UserStatus::ACTIVE,
+        ]);
+        $viewer->assignRole($viewerRole);
+
+        $this->actingAs($viewer, 'web')
+            ->getJson('/api/admin/usuarios/roles-disponibles')
+            ->assertStatus(403);
+    }
+
+    /**
+     * Consulta asíncrona de roles disponibles es permitida (200) para un usuario con usuarios.roles.
+     */
+    public function test_roles_disponibles_allowed_with_usuarios_roles(): void
+    {
+        $response = $this->actingAs($this->adminUser, 'web')
+            ->getJson('/api/admin/usuarios/roles-disponibles');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => [
+                        'id',
+                        'name',
+                        'slug',
+                    ],
+                ],
+            ]);
+    }
+
+    /**
+     * Un actor con usuarios.crear pero SIN usuarios.roles puede crear un usuario sin asignar roles.
+     * Si intenta asignar roles sin usuarios.roles, es rechazado.
+     */
+    public function test_creator_without_roles_permission_can_create_user_without_roles(): void
+    {
+        $creatorRole = Role::create([
+            'name' => 'Solo Creador',
+            'slug' => 'solo_creador',
+            'is_system' => false,
+        ]);
+        $creatorRole->givePermission(Permission::where('slug', 'usuarios.crear')->firstOrFail());
+
+        $creator = User::create([
+            'name' => 'Operador Creador',
+            'email' => 'operador.creador@test.local',
+            'password' => Hash::make('PasswordSegura2026!'),
+            'status' => UserStatus::ACTIVE,
+        ]);
+        $creator->assignRole($creatorRole);
+
+        $nuevaPersona = Persona::create([
+            'nombres' => 'Juana',
+            'apellidos' => 'Perez',
+            'tipo_documento' => 'DNI',
+            'numero_documento' => '77889900',
+            'email' => 'juana@test.local',
+            'estado' => PersonaStatus::ACTIVO,
+        ]);
+
+        $response = $this->actingAs($creator, 'web')
+            ->postJson('/api/admin/usuarios', [
+                'persona_id' => $nuevaPersona->id,
+                'email' => 'juana.acceso@test.local',
+                'password' => 'PasswordSegura2026!',
+                'password_confirmation' => 'PasswordSegura2026!',
+            ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.name', 'Juana Perez')
+            ->assertJsonPath('data.email', 'juana.acceso@test.local');
+
+        $createdUser = User::where('email', 'juana.acceso@test.local')->firstOrFail();
+        $this->assertSame('Juana Perez', $createdUser->name);
+        $this->assertCount(0, $createdUser->roles);
     }
 
     /**

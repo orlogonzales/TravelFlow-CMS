@@ -176,20 +176,27 @@ class UsuarioController extends Controller
 
     /**
      * Actualiza la información base de una cuenta de usuario.
-     * REGLA VINCULANTE: NO modifica roles, estados ni contraseñas.
+     * REGLAS VINCULANTES (FASE 1C.2A):
+     * - Únicamente el correo electrónico de acceso es modificable en edición normal.
+     * - Persona es la única fuente soberana de identidad: users.name se sincroniza desde Persona.
+     * - La persona vinculada es inmutable en esta operación (cero reasignación libre de Persona).
+     * - NO modifica roles, estados ni contraseñas.
      */
     public function update(UpdateUsuarioRequest $request, User $usuario): UsuarioResource
     {
         $data = $request->validated();
 
         DB::transaction(function () use ($usuario, $data) {
-            $persona = Persona::findOrFail($data['persona_id']);
-
-            $usuario->update([
-                'persona_id' => $persona->id,
-                'name' => ! empty($data['name']) ? trim($data['name']) : $persona->nombre_completo,
+            $updatePayload = [
                 'email' => $data['email'],
-            ]);
+            ];
+
+            // Sincronizar users.name desde la persona vinculada para garantizar coherencia
+            if ($usuario->persona) {
+                $updatePayload['name'] = $usuario->persona->nombre_completo;
+            }
+
+            $usuario->update($updatePayload);
         });
 
         return new UsuarioResource($usuario->load(['persona', 'roles']));

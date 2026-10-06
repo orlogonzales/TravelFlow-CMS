@@ -411,65 +411,59 @@
       </template>
     </TfModal>
 
-    <!-- MODAL 2: Editar Información Base (size="lg") -->
+    <!-- MODAL 2: Editar Información Base (size="md") -->
     <TfModal
       v-model="showEditModal"
-      title="Editar Información de Usuario"
-      size="lg"
+      title="Editar Correo de Acceso"
+      size="md"
       :loading="saving"
     >
       <div v-if="loadingRecord" class="py-3">
         <div class="row g-3">
+          <div class="col-12"><TfSkeleton height="60px" /></div>
           <div class="col-12"><TfSkeleton height="40px" /></div>
-          <div class="col-12 col-md-6"><TfSkeleton height="40px" /></div>
-          <div class="col-12 col-md-6"><TfSkeleton height="40px" /></div>
         </div>
       </div>
 
       <form v-else id="edit-user-form" @submit.prevent="submitEditUser">
         <div class="row g-3">
+          <!-- Persona Vinculada: Solo Lectura / Contexto Soberano de Identidad -->
           <div class="col-12">
-            <label for="edit-persona-id" class="form-label fw-semibold">
-              Persona vinculada <span class="text-danger">*</span>
+            <label class="form-label fw-semibold text-muted small text-uppercase mb-1">
+              Persona vinculada (identidad soberana)
             </label>
-            <select
-              id="edit-persona-id"
-              v-model="editForm.persona_id"
-              class="form-select"
-              :class="{ 'is-invalid': editErrors.persona_id }"
-              :disabled="saving"
-              required
-            >
-              <option
-                v-for="p in editPersonaOptions"
-                :key="p.id"
-                :value="p.id"
+            <div class="p-3 rounded border bg-body-tertiary d-flex align-items-center gap-3">
+              <div
+                class="rounded-circle bg-secondary text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0"
+                style="width: 42px; height: 42px; font-size: 0.95rem;"
+                aria-hidden="true"
               >
-                {{ p.nombre_completo }} ({{ p.tipo_documento || 'DOC' }}: {{ p.numero_documento || 'Sin número' }})
-              </option>
-            </select>
-            <div v-if="editErrors.persona_id" class="invalid-feedback d-block">
-              {{ editErrors.persona_id[0] }}
+                {{ getUserInitials(activeUser?.persona ? activeUser.persona.nombre_completo : activeUser?.name || 'U') }}
+              </div>
+              <div class="min-w-0 flex-grow-1">
+                <span class="fw-semibold text-body d-block text-truncate">
+                  {{ activeUser?.persona ? activeUser.persona.nombre_completo : activeUser?.name }}
+                </span>
+                <small v-if="activeUser?.persona" class="text-muted d-block font-monospace">
+                  <i class="fa-solid fa-id-card me-1 small"></i>{{ activeUser.persona.tipo_documento || 'DOC' }}: {{ activeUser.persona.numero_documento || 'Sin número' }}
+                </small>
+                <small v-else class="text-muted d-block">Sin persona vinculada</small>
+              </div>
+            </div>
+            <div class="form-text text-muted small mt-1">
+              <i class="fa-solid fa-circle-info me-1"></i>
+              La identidad humana es gestionada soberanamente desde el módulo <strong>Personas</strong>.
             </div>
           </div>
 
-          <div class="col-12 col-md-6">
-            <TfInput
-              id="edit-name"
-              v-model="editForm.name"
-              label="Nombre descriptivo de la cuenta"
-              placeholder="Opcional (deriva de persona si queda vacío)"
-              :error-message="editErrors.name?.[0]"
-              :disabled="saving"
-            />
-          </div>
-
-          <div class="col-12 col-md-6">
+          <!-- Correo Electrónico de Acceso -->
+          <div class="col-12">
             <TfInput
               id="edit-email"
               v-model="editForm.email"
               type="email"
               label="Correo electrónico de acceso"
+              placeholder="usuario@dominio.com"
               prefix-icon="fa-regular fa-envelope"
               :required="true"
               :error-message="editErrors.email?.[0]"
@@ -578,15 +572,11 @@
                 <span class="text-muted small d-block">Email de acceso:</span>
                 <span class="font-monospace fw-bold text-body">{{ detailRecord.email }}</span>
               </div>
-              <div class="mb-2">
+              <div>
                 <span class="text-muted small d-block">Estado operativo:</span>
                 <TfBadge :variant="getStatusVariant(detailRecord.status)" :dot="true">
                   {{ formatStatusLabel(detailRecord.status) }}
                 </TfBadge>
-              </div>
-              <div>
-                <span class="text-muted small d-block">Seguridad de sesión:</span>
-                <span class="badge bg-success-subtle text-success-emphasis border">Sesión segura HttpOnly</span>
               </div>
             </div>
           </div>
@@ -937,9 +927,6 @@ const loadingPersonasElegibles = ref(false);
 const rolesDisponibles = ref<RoleItem[]>([]);
 const loadingRolesDisponibles = ref(false);
 
-// Opciones de personas para el modal de edición
-const editPersonaOptions = ref<PersonaSummary[]>([]);
-
 // Formularios
 const createForm = reactive({
   persona_id: '' as number | '',
@@ -952,8 +939,6 @@ const createForm = reactive({
 const createErrors = ref<Record<string, string[]>>({});
 
 const editForm = reactive({
-  persona_id: '' as number | '',
-  name: '',
   email: '',
 });
 const editErrors = ref<Record<string, string[]>>({});
@@ -1087,6 +1072,10 @@ function generateAndFillPassword(target: 'create' | 'reset') {
  * Carga remota de soporte para modales
  */
 async function loadPersonasElegibles() {
+  if (!authStore.hasPermission('usuarios.crear')) {
+    personasElegibles.value = [];
+    return;
+  }
   loadingPersonasElegibles.value = true;
   try {
     const res = await api.get<{ data: PersonaSummary[] }>('/api/admin/usuarios/personas-elegibles');
@@ -1099,7 +1088,10 @@ async function loadPersonasElegibles() {
 }
 
 async function loadRolesDisponibles() {
-  if (!authStore.hasPermission('usuarios.roles')) return;
+  if (!authStore.hasPermission('usuarios.roles')) {
+    rolesDisponibles.value = [];
+    return;
+  }
   loadingRolesDisponibles.value = true;
   try {
     const res = await api.get<{ data: RoleItem[] }>('/api/admin/usuarios/roles-disponibles');
@@ -1124,8 +1116,10 @@ async function openCreateModal() {
   createErrors.value = {};
 
   showCreateModal.value = true;
-  await loadPersonasElegibles();
-  await loadRolesDisponibles();
+  await Promise.all([
+    loadPersonasElegibles(),
+    loadRolesDisponibles(),
+  ]);
 }
 
 async function submitCreateUser() {
@@ -1163,7 +1157,7 @@ async function submitCreateUser() {
 }
 
 /**
- * MODAL 2: Editar Información Base
+ * MODAL 2: Editar Información Base (Correo de Acceso)
  */
 async function openEditModal(id: number) {
   editErrors.value = {};
@@ -1171,24 +1165,10 @@ async function openEditModal(id: number) {
   loadingRecord.value = true;
 
   try {
-    const [userRes, personasRes] = await Promise.all([
-      api.get<{ data: UsuarioItem }>(`/api/admin/usuarios/${id}`),
-      api.get<{ data: PersonaSummary[] }>('/api/admin/usuarios/personas-elegibles'),
-    ]);
-
+    const userRes = await api.get<{ data: UsuarioItem }>(`/api/admin/usuarios/${id}`);
     const user = userRes.data;
     activeUser.value = user;
-    editForm.persona_id = user.persona_id || '';
-    editForm.name = user.name;
     editForm.email = user.email;
-
-    // Incluir la persona actualmente vinculada en las opciones de selección
-    const elegibles = personasRes.data || [];
-    if (user.persona && !elegibles.some(p => p.id === user.persona?.id)) {
-      editPersonaOptions.value = [user.persona, ...elegibles];
-    } else {
-      editPersonaOptions.value = elegibles;
-    }
   } catch (err: any) {
     showEditModal.value = false;
     Swal.fire({
@@ -1207,14 +1187,16 @@ async function submitEditUser() {
   editErrors.value = {};
 
   try {
-    await api.put(`/api/admin/usuarios/${activeUser.value.id}`, editForm);
+    await api.put(`/api/admin/usuarios/${activeUser.value.id}`, {
+      email: editForm.email,
+    });
     showEditModal.value = false;
 
     Swal.fire({
       toast: true,
       position: 'top-end',
       icon: 'success',
-      title: 'Usuario actualizado correctamente',
+      title: 'Correo de acceso actualizado correctamente',
       showConfirmButton: false,
       timer: 3000,
       timerProgressBar: true,
