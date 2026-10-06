@@ -1,33 +1,68 @@
-// TravelFlow CMS - Estilos Base FASE 1B
-// Bootstrap 5.3.8 (Infraestructura CSS Base Oficial)
+// TravelFlow CMS - Estilos Oficiales FASE 1B.1
+// 1. Bootstrap 5.3.8 (Infraestructura CSS Base Oficial)
 @import "bootstrap/scss/bootstrap";
 
-// Font Awesome Free (Iconografía Oficial Free)
+// 2. Font Awesome Free (Iconografía Oficial Free)
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 
-// SweetAlert2 (Notificaciones y Feedback Oficial)
+// 3. SweetAlert2 (Notificaciones y Feedback Oficial)
 @import "sweetalert2/dist/sweetalert2.min.css";
 
-// TF Design System - Tokens y Estilos Base
+// 4. AdminLTE 4 Vue (Infraestructura Visual Oficial de Administración)
+@import "@adminlte/vue/css";
+
+// 5. TF Design System - Tokens y Estilos Soberanos
 :root {
   --tf-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --tf-brand-primary: #0d6efd;
   --tf-brand-dark: #0f172a;
-  --tf-bg-light: #f8fafc;
 }
 
 body {
   font-family: var(--tf-font-family);
-  background-color: var(--tf-bg-light);
-  color: #1e293b;
   min-height: 100vh;
 }
 
-// Utilidades del TF Shell
-.tf-shadow-sm {
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+// Mapeo transparente para que las clases bi-* de AdminLTE rendericen con Font Awesome Free
+// evitando la instalación redundante de Bootstrap Icons
+.bi-list::before {
+  content: "\f0c9" !important; // fa-bars
+  font-family: "Font Awesome 6 Free" !important;
+  font-weight: 900 !important;
+  font-style: normal;
 }
 
-.font-monospace {
-  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+.bi-chevron-right::before {
+  content: "\f054" !important; // fa-chevron-right
+  font-family: "Font Awesome 6 Free" !important;
+  font-weight: 900 !important;
+  font-style: normal;
+}
+
+.bi-chevron-down::before {
+  content: "\f078" !important; // fa-chevron-down
+  font-family: "Font Awesome 6 Free" !important;
+  font-weight: 900 !important;
+  font-style: normal;
+}
+
+.bi-search::before {
+  content: "\f002" !important; // fa-magnifying-glass
+  font-family: "Font Awesome 6 Free" !important;
+  font-weight: 900 !important;
+  font-style: normal;
+}
+
+.bi-arrows-fullscreen::before {
+  content: "\f065" !important; // fa-expand
+  font-family: "Font Awesome 6 Free" !important;
+  font-weight: 900 !important;
+  font-style: normal;
+}
+
+.bi-fullscreen-exit::before {
+  content: "\f066" !important; // fa-compress
+  font-family: "Font Awesome 6 Free" !important;
+  font-weight: 900 !important;
+  font-style: normal;
 }

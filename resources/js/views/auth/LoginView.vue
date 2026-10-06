@@ -1,15 +1,19 @@
 <template>
-  <div class="tf-login-wrapper min-vh-100 d-flex align-items-center justify-content-center py-5 px-3">
-    <div class="tf-login-card card shadow-sm border-0 w-100" style="max-width: 440px;">
-      <div class="card-body p-4 p-sm-5">
-        <!-- Logo y Encabezado de Marca -->
-        <div class="text-center mb-4">
-          <div class="tf-brand-icon mb-3 d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle" style="width: 64px; height: 64px;">
-            <i class="fa-solid fa-compass fs-2" aria-hidden="true"></i>
-          </div>
-          <h1 class="h3 fw-bold text-slate-800 mb-1">TravelFlow CMS</h1>
-          <p class="text-muted small mb-0">Acceso al Panel de Administración</p>
+  <div class="tf-login-page min-vh-100 d-flex align-items-center justify-content-center p-3">
+    <LteAuthLayout auth-type="login" variant="v2">
+      <!-- Logo Oficial de TravelFlow CMS -->
+      <template #logo>
+        <div class="d-flex align-items-center justify-content-center gap-2 text-decoration-none py-1">
+          <i class="fa-solid fa-compass text-primary fs-2" aria-hidden="true"></i>
+          <span class="fs-4 fw-bold text-body">TravelFlow <span class="fw-normal text-primary">CMS</span></span>
         </div>
+      </template>
+
+      <!-- Cuerpo del Formulario de Autenticación -->
+      <template #default>
+        <p class="login-box-msg text-muted small text-center mb-3">
+          Ingrese sus credenciales para acceder al panel
+        </p>
 
         <!-- Alerta de Error Global -->
         <TfAlert
@@ -20,7 +24,7 @@
           @dismiss="errorMessage = ''"
         />
 
-        <!-- Formulario de Inicio de Sesión -->
+        <!-- Formulario Reactivo -->
         <form novalidate @submit.prevent="handleSubmit">
           <!-- Campo Email -->
           <TfInput
@@ -37,7 +41,7 @@
             @blur="validateEmail"
           />
 
-          <!-- Campo Contraseña con Show/Hide integrado -->
+          <!-- Campo Contraseña con Toggle Font Awesome -->
           <TfInput
             id="login-password"
             v-model="form.password"
@@ -81,18 +85,19 @@
             {{ authStore.loading ? 'Verificando acceso...' : 'Ingresar al sistema' }}
           </TfButton>
         </form>
-      </div>
 
-      <div class="card-footer bg-light border-0 py-3 text-center text-muted small">
-        <span>TravelFlow CMS &copy; {{ new Date().getFullYear() }} — Acceso restringido</span>
-      </div>
-    </div>
+        <div class="mt-4 pt-3 border-top text-center text-muted small">
+          <span>TravelFlow CMS &copy; {{ new Date().getFullYear() }} &bull; Acceso restringido</span>
+        </div>
+      </template>
+    </LteAuthLayout>
   </div>
 </template>
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { LteAuthLayout } from '@adminlte/vue';
 import { useAuthStore } from '@/stores/auth';
 import { TfButton, TfInput, TfAlert } from '@/design-system';
 import { ApiError } from '@/composables/useApi';
@@ -154,13 +159,11 @@ async function handleSubmit() {
       remember: form.remember,
     });
 
-    // Redirección hacia la ruta administrativa o la URL solicitada originalmente
     const redirectPath = (route.query.redirect as string) || '/admin';
     router.push(redirectPath);
   } catch (error: any) {
     if (error instanceof ApiError) {
       if (error.status === 422) {
-        // Errores de validación devueltos por el backend
         if (error.data.errors?.email) {
           errorMessage.value = error.data.errors.email[0];
           errors.email = error.data.errors.email[0];
@@ -184,15 +187,7 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
-.tf-login-wrapper {
-  background-color: #f1f5f9;
-}
-
-.tf-login-card {
-  border-radius: 12px;
-}
-
-.text-slate-800 {
-  color: #1e293b;
+.tf-login-page {
+  background-color: var(--bs-tertiary-bg, #f1f5f9);
 }
 </style>
