@@ -235,3 +235,27 @@ En la **Fase 1C.1**, se extiende el TF Design System con componentes modulares l
 - **Acciones de Fila:** Botones compactos pero con área de clic desahogada (`px-2 py-1`, `gap-1`), iconos Font Awesome, etiquetas responsivas y atributos de accesibilidad (`aria-label`, `title`).
 - **Grid de Formularios (Crear / Editar):** Distribución simétrica balanceada al 50%/50% (`col-12 col-md-6`) para Tipo de documento y Número de documento, garantizando legibilidad de selectores largos, con etiquetas en sentence case.
 - **Ficha de Persona (Modal `size="lg"`):** Estructura desahogada organizada en tarjetas de información (`col-12 col-md-6`) con avatares por iniciales, identificación discreta (`ID #X`) y trazabilidad de fechas sin sensación de lista comprimida.
+
+---
+
+## 11. Módulo de Administración de Usuarios (Fase 1C.2)
+
+En la **Fase 1C.2**, se implementa la administración del núcleo de cuentas de acceso (`User`) reutilizando el patrón CRUD homologado en 1C.1/1C.1A:
+
+### 11.1 Arquitectura de Superficie (`UsuariosView.vue`):
+- Ubicación: `resources/js/views/admin/usuarios/UsuariosView.vue`.
+- Ruta SPA: `/admin/usuarios` protegida por autenticación y guard `usuarios.ver`.
+- Menú Lateral: Integrado en `AdminLayout.vue` bajo la sección "ADMINISTRACIÓN", condicionado estrictamente al permiso `usuarios.ver`.
+- Componentes TFDS Reutilizados: `<TfModal>`, `<TfTable>`, `<TfPagination>`, `<TfBadge>`, `<TfSelect>`, `<TfInput>`, `<TfEmptyState>`, `<TfSkeleton>`.
+
+### 11.2 Principios de Diseño y Operación UI:
+- **Persona Obligatoria:** En el modal de creación, la selección de una Persona elegible (activa y sin cuenta previa) es un campo obligatorio. La lista se precarga asíncronamente desde `GET /api/admin/usuarios/personas-elegibles`.
+- **Generador de Contraseñas Criptoseguro:** Generador local integrado en el formulario de creación usando `window.crypto.getRandomValues` (prohibido `Math.random`). Proporciona 16 caracteres de alta entropía (mayúsculas, minúsculas, dígitos y símbolos) y botón interactivo para copiar al portapapeles.
+- **Modales de Operación Segregados:**
+  - *Ficha de Usuario (`size="lg"`):* Consulta detallada con identidad, persona vinculada, estado, roles asignados con insignias y permisos efectivos agregados (`usuarios.ver`).
+  - *Crear Usuario (`size="lg"`):* Persona obligatoria, nombre, correo normalizado, contraseña (mín 12) y roles opcionales (condicionados a `usuarios.roles`).
+  - *Editar Datos Base (`size="md"`):* Modificación exclusiva de nombre y correo (`usuarios.editar`). No expone estados, roles ni contraseñas.
+  - *Gestionar Roles (`size="md"`):* Modal dedicado para asignar/desasignar roles (`usuarios.roles`). Aplica filtrado anti-escalada y protege al último admin.
+  - *Cambiar Estado (`size="md"`):* Modal específico con advertencia de revocación de sesiones (`usuarios.estado`). Prohíbe auto-inactivación y desactivación del último admin.
+  - *Restablecer Contraseña (`size="md"`):* Modal específico con confirmación y advertencia de cierre de sesiones (`usuarios.password`).
+- **Ergonomía UI:** Los botones de acción de fila se renderizan y deshabilitan dinámicamente según los permisos del operador y reglas de seguridad (por ejemplo, el botón de estado se deshabilita si el usuario es la cuenta propia del operador).

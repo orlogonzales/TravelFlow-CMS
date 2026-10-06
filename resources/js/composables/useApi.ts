@@ -157,6 +157,14 @@ export function useApi() {
     });
   }
 
+  function patch<T = any>(endpoint: string, body?: any, options?: ApiRequestOptions): Promise<T> {
+    return request<T>(endpoint, {
+      ...options,
+      method: 'PATCH',
+      body: body instanceof FormData ? body : JSON.stringify(body),
+    });
+  }
+
   function del<T = any>(endpoint: string, options?: ApiRequestOptions): Promise<T> {
     return request<T>(endpoint, { ...options, method: 'DELETE' });
   }
@@ -166,6 +174,7 @@ export function useApi() {
     get,
     post,
     put,
+    patch,
     delete: del,
     initializeCsrf,
   };

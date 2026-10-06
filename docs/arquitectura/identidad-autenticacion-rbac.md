@@ -141,3 +141,38 @@ En la **Fase 1C.1**, se incorpora la administración del núcleo de identidades 
 > - Se preserva `Persona ≠ User`: la creación o edición de una `Persona` jamás crea ni muta cuentas de acceso `User`.
 > - Prohibido Hard Delete: No se expone `DELETE` para personas. Las transiciones operativas se manejan mediante el enum `PersonaStatus` (`activo`, `inactivo`, `archivado`).
 > - Detección de duplicidad documental: En `StorePersonaRequest` y `UpdatePersonaRequest`, si se suministra combinación de `tipo_documento` y `numero_documento` idéntica a una existente, se rechaza con `HTTP 422 Unprocessable Entity` para prevenir identidades duplicadas.
+
+---
+
+## 8. Módulo de Administración de Usuarios y Reglas de Seguridad (Fase 1C.2)
+
+En la **Fase 1C.2**, se implementa la administración de cuentas de acceso (`User`) bajo un estricto modelo de seguridad soberano:
+
+### 8.1 Catálogo Granular de Permisos Segregados:
+- **`usuarios.ver`:** Consultar listado de usuarios, ficha individual con roles y permisos efectivos agregados, y catálogos de selección (`GET /api/admin/usuarios`, `GET /api/admin/usuarios/{id}`, `GET /api/admin/usuarios/personas-elegibles`, `GET /api/admin/usuarios/roles-disponibles`).
+- **`usuarios.crear`:** Crear cuentas de acceso exigiendo el vínculo obligatorio con una Persona activa y sin cuenta previa (`POST /api/admin/usuarios`).
+- **`usuarios.editar`:** Actualizar únicamente datos base de la cuenta (`name`, `email`) (`PUT /api/admin/usuarios/{id}`). No permite alterar roles, estados ni credenciales.
+- **`usuarios.roles`:** Asignar y desasignar roles a cuentas de acceso (`PUT /api/admin/usuarios/{id}/roles`).
+- **`usuarios.estado`:** Cambiar estado del usuario (`active`, `inactive`, `blocked`) (`PATCH /api/admin/usuarios/{id}/estado`).
+- **`usuarios.password`:** Restablecer credenciales de acceso de un usuario (`PUT /api/admin/usuarios/{id}/password`).
+
+### 8.2 Principios de Seguridad y Anti-Escalada (`DEFINIDO Y VINCULANTE`):
+1. **Persona Obligatoria:** Toda cuenta creada desde el CRUD administrativo debe vincularse obligatoriamente a una Persona activa existente y libre de vínculo (`0..1 ↔ 0..1`). No se permite la creación de usuarios huérfanos desde el panel.
+2. **Anti-Escalada Capability-Based (Cero Privilegio por Nombre de Rol):**
+   - Un operador que posee `usuarios.roles` solo puede asignar roles cuyos permisos constituyan un **subconjunto estricto de sus propios permisos efectivos**:
+     $$\text{Permisos}(\text{Rol Solicitado}) \subseteq \text{Permisos}(\text{Operador Autenticado})$$
+   - Si el rol solicitado contiene aunque sea un permiso que el operador no posee, la asignación es rechazada inmediatamente con `HTTP 403 Forbidden` (`No tiene autorización para asignar un rol con mayores privilegios`).
+   - Cero bypass basado en `$user->hasRole('admin')`. La seguridad reside en capacidades y conjuntos de permisos.
+3. **Roles en Creación:**
+   - La asignación de roles durante el alta (`StoreUsuarioRequest`) requiere expresamente que el operador posea `usuarios.roles` además de `usuarios.crear`. Si no lo posee, cualquier rol enviado es rechazado.
+4. **Protección del Último Administrador Efectivo:**
+   - Un "administrador efectivo" es cualquier usuario con `status = active` que posea los permisos combinados `admin.acceder` y `usuarios.roles`.
+   - Se prohíbe inactivar, bloquear o retirar roles a un usuario si dicha operación dejaría al sistema con cero administradores efectivos.
+5. **Protección Anti Self-Lockout:**
+   - Ningún operador puede auto-inactivarse, auto-bloquearse ni retirarse a sí mismo el acceso administrativo o la capacidad de gestión de roles.
+6. **Revocación Forzosa de Sesiones en Base de Datos:**
+   - Al cambiar el estado de un usuario a `inactive` o `blocked`, o al restablecer su contraseña, el backend ejecuta la eliminación atómica de sus registros en la tabla `sessions`:
+     `DB::table('sessions')->where('user_id', $id)->delete()`.
+   - Provoca la invalidación inmediata de cualquier sesión activa en otros navegadores o dispositivos.
+7. **Prohibición de Hard Delete:**
+   - Queda estrictamente prohibida la eliminación física de registros de usuarios. No existe ruta ni método `DELETE` para usuarios.

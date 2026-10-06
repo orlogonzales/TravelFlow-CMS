@@ -122,17 +122,29 @@ const menuItems = computed<MenuNode[]>(() => {
     },
   ];
 
-  if (authStore.hasPermission('personas.ver')) {
+  const hasAdminHeader = authStore.hasPermission('personas.ver') || authStore.hasPermission('usuarios.ver');
+
+  if (hasAdminHeader) {
     items.push({
       type: 'header',
       text: 'ADMINISTRACIÓN',
     });
-    items.push({
-      type: 'item',
-      text: 'Personas',
-      href: '/admin/personas',
-      icon: 'fa-solid fa-address-card',
-    });
+    if (authStore.hasPermission('personas.ver')) {
+      items.push({
+        type: 'item',
+        text: 'Personas',
+        href: '/admin/personas',
+        icon: 'fa-solid fa-address-card',
+      });
+    }
+    if (authStore.hasPermission('usuarios.ver')) {
+      items.push({
+        type: 'item',
+        text: 'Usuarios',
+        href: '/admin/usuarios',
+        icon: 'fa-solid fa-users-gear',
+      });
+    }
   }
 
   return items;

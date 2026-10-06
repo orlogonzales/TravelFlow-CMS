@@ -47,6 +47,15 @@ const routes: RouteRecordRaw[] = [
           title: 'Personas — TravelFlow CMS',
         },
       },
+      {
+        path: 'usuarios',
+        name: 'admin-usuarios',
+        component: () => import('@/views/admin/usuarios/UsuariosView.vue'),
+        meta: {
+          requiresAuth: true,
+          title: 'Usuarios — TravelFlow CMS',
+        },
+      },
     ],
   },
   {

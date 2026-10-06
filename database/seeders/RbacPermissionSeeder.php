@@ -61,7 +61,53 @@ class RbacPermissionSeeder extends Seeder
             ]
         );
 
-        // 3. Asignación explícita al rol de sistema 'admin'
+        // 3. Permisos Oficiales para Fase 1C.2 (Usuarios)
+        $permUsuariosCrear = Permission::firstOrCreate(
+            ['slug' => 'usuarios.crear'],
+            [
+                'name' => 'Crear Usuarios',
+                'domain' => 'usuario',
+                'description' => 'Permite registrar nuevas cuentas de usuario vinculadas a personas',
+            ]
+        );
+
+        $permUsuariosEditar = Permission::firstOrCreate(
+            ['slug' => 'usuarios.editar'],
+            [
+                'name' => 'Editar Usuarios',
+                'domain' => 'usuario',
+                'description' => 'Permite modificar la información básica de cuentas de usuario',
+            ]
+        );
+
+        $permUsuariosRoles = Permission::firstOrCreate(
+            ['slug' => 'usuarios.roles'],
+            [
+                'name' => 'Administrar Roles de Usuario',
+                'domain' => 'usuario',
+                'description' => 'Permite asignar o modificar los roles asignados a cuentas de usuario',
+            ]
+        );
+
+        $permUsuariosEstado = Permission::firstOrCreate(
+            ['slug' => 'usuarios.estado'],
+            [
+                'name' => 'Modificar Estado de Usuario',
+                'domain' => 'usuario',
+                'description' => 'Permite activar, inactivar o bloquear cuentas de usuario',
+            ]
+        );
+
+        $permUsuariosPassword = Permission::firstOrCreate(
+            ['slug' => 'usuarios.password'],
+            [
+                'name' => 'Restablecer Contraseña de Usuario',
+                'domain' => 'usuario',
+                'description' => 'Permite restablecer la contraseña de acceso de usuarios',
+            ]
+        );
+
+        // 4. Asignación explícita al rol de sistema 'admin'
         $adminRole = Role::firstOrCreate(
             ['slug' => 'admin'],
             [
@@ -73,6 +119,11 @@ class RbacPermissionSeeder extends Seeder
 
         $adminRole->givePermission($permAdminAcceder);
         $adminRole->givePermission($permUsuariosVer);
+        $adminRole->givePermission($permUsuariosCrear);
+        $adminRole->givePermission($permUsuariosEditar);
+        $adminRole->givePermission($permUsuariosRoles);
+        $adminRole->givePermission($permUsuariosEstado);
+        $adminRole->givePermission($permUsuariosPassword);
         $adminRole->givePermission($permPersonasVer);
         $adminRole->givePermission($permPersonasCrear);
         $adminRole->givePermission($permPersonasEditar);

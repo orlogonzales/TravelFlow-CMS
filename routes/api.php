@@ -70,4 +70,35 @@ Route::middleware(['web', 'auth:sanctum', 'active'])->group(function () {
         Route::match(['put', 'patch'], '/{persona}', [\App\Http\Controllers\Admin\PersonaController::class, 'update'])
             ->middleware('can:personas.editar');
     });
+
+    // Administración de Usuarios (Fase 1C.2)
+    Route::prefix('admin/usuarios')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\UsuarioController::class, 'index'])
+            ->middleware('can:usuarios.ver');
+
+        // Rutas especializadas previas a {usuario} para evitar colisiones de Route Model Binding
+        Route::get('/personas-elegibles', [\App\Http\Controllers\Admin\UsuarioController::class, 'personasElegibles'])
+            ->middleware('can:usuarios.crear');
+
+        Route::get('/roles-disponibles', [\App\Http\Controllers\Admin\UsuarioController::class, 'rolesDisponibles'])
+            ->middleware('can:usuarios.roles');
+
+        Route::post('/', [\App\Http\Controllers\Admin\UsuarioController::class, 'store'])
+            ->middleware('can:usuarios.crear');
+
+        Route::get('/{usuario}', [\App\Http\Controllers\Admin\UsuarioController::class, 'show'])
+            ->middleware('can:usuarios.ver');
+
+        Route::match(['put', 'patch'], '/{usuario}', [\App\Http\Controllers\Admin\UsuarioController::class, 'update'])
+            ->middleware('can:usuarios.editar');
+
+        Route::patch('/{usuario}/estado', [\App\Http\Controllers\Admin\UsuarioController::class, 'updateEstado'])
+            ->middleware('can:usuarios.estado');
+
+        Route::match(['put', 'patch'], '/{usuario}/roles', [\App\Http\Controllers\Admin\UsuarioController::class, 'updateRoles'])
+            ->middleware('can:usuarios.roles');
+
+        Route::match(['put', 'patch'], '/{usuario}/password', [\App\Http\Controllers\Admin\UsuarioController::class, 'updatePassword'])
+            ->middleware('can:usuarios.password');
+    });
 });
