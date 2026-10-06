@@ -30,7 +30,7 @@
               </span>
             </div>
           </th>
-          <th v-if="$slots.actions" scope="col" class="text-end" style="width: 140px;">
+          <th v-if="$slots.actions" scope="col" class="text-end" style="width: 150px;">
             Acciones
           </th>
         </tr>

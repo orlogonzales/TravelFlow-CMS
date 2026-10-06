@@ -20,7 +20,7 @@
         <div
           class="modal-dialog"
           :class="[
-            size ? `modal-${size}` : '',
+            size && size !== 'md' ? `modal-${size}` : '',
             { 'modal-dialog-centered': centered },
             { 'modal-dialog-scrollable': scrollable }
           ]"
@@ -64,7 +64,7 @@ import { watch, onBeforeUnmount, ref } from 'vue';
 interface Props {
   modelValue: boolean;
   title?: string;
-  size?: 'sm' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   centered?: boolean;
   scrollable?: boolean;
   staticBackdrop?: boolean;

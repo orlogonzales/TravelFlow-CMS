@@ -228,3 +228,10 @@ En la **Fase 1C.1**, se extiende el TF Design System con componentes modulares l
   - Edición mediante modal con precarga remota respaldada por `<TfSkeleton>`.
   - Ficha detallada mediante modal de consulta.
   - Notificaciones de confirmación mediante SweetAlert2 toasts. Cero `window.location.reload()`.
+
+### 10.3 Refinamientos Visuales y Homologación del Patrón CRUD (Fase 1C.1A):
+- **Regla Terminológica Obligatoria:** La palabra `User` es terminología interna del modelo Eloquent. La interfaz visual expone invariablemente **"Cuenta de acceso"** y **"Cuenta de acceso vinculada"** para el usuario final.
+- **Toolbar / Buscador:** Ocupa el ancho completo (`w-100`) del encabezado de la tarjeta con botones accesibles (`Buscar` y `Limpiar`) adaptables a móvil.
+- **Acciones de Fila:** Botones compactos pero con área de clic desahogada (`px-2 py-1`, `gap-1`), iconos Font Awesome, etiquetas responsivas y atributos de accesibilidad (`aria-label`, `title`).
+- **Grid de Formularios (Crear / Editar):** Distribución simétrica balanceada al 50%/50% (`col-12 col-md-6`) para Tipo de documento y Número de documento, garantizando legibilidad de selectores largos, con etiquetas en sentence case.
+- **Ficha de Persona (Modal `size="lg"`):** Estructura desahogada organizada en tarjetas de información (`col-12 col-md-6`) con avatares por iniciales, identificación discreta (`ID #X`) y trazabilidad de fechas sin sensación de lista comprimida.

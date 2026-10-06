@@ -42,38 +42,39 @@
 
     <!-- Tarjeta Principal con Búsqueda y Tabla -->
     <div class="card shadow-sm border-0 mb-4">
-      <!-- Barra de Filtros y Búsqueda -->
+      <!-- Barra de Filtros y Búsqueda (Toolbar de ancho completo optimizado) -->
       <div class="card-header bg-transparent border-bottom p-3">
-        <form class="row g-2 align-items-center" @submit.prevent="handleSearch">
-          <div class="col-12 col-md-6 col-lg-5">
-            <div class="input-group">
-              <span class="input-group-text bg-body text-muted border-end-0">
-                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-              </span>
-              <input
-                v-model="searchQuery"
-                type="search"
-                class="form-control border-start-0"
-                placeholder="Buscar por nombre, documento, correo o teléfono..."
-                aria-label="Buscar personas"
-              />
-              <button
-                type="submit"
-                class="btn btn-outline-primary"
-                :disabled="loading"
-              >
-                Buscar
-              </button>
-              <button
-                v-if="activeSearch"
-                type="button"
-                class="btn btn-outline-secondary"
-                title="Limpiar búsqueda"
-                @click="clearSearch"
-              >
-                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-              </button>
-            </div>
+        <form class="w-100" @submit.prevent="handleSearch">
+          <div class="input-group">
+            <span class="input-group-text bg-body text-muted border-end-0">
+              <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            </span>
+            <input
+              v-model="searchQuery"
+              type="search"
+              class="form-control border-start-0"
+              placeholder="Buscar por nombre, documento, correo electrónico o teléfono..."
+              aria-label="Buscar personas"
+            />
+            <button
+              type="submit"
+              class="btn btn-primary px-3 d-inline-flex align-items-center gap-1"
+              :disabled="loading"
+            >
+              <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+              <span class="d-none d-sm-inline">Buscar</span>
+            </button>
+            <button
+              v-if="activeSearch"
+              type="button"
+              class="btn btn-outline-secondary px-3 d-inline-flex align-items-center gap-1"
+              title="Limpiar búsqueda"
+              aria-label="Limpiar búsqueda"
+              @click="clearSearch"
+            >
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+              <span class="d-none d-sm-inline">Limpiar</span>
+            </button>
           </div>
         </form>
       </div>
@@ -144,48 +145,50 @@
             </TfBadge>
           </template>
 
-          <!-- Celda: Cuenta User vinculada -->
+          <!-- Celda: Cuenta de acceso vinculada (Terminología Oficial) -->
           <template #cell-has_user="{ item }">
             <span
               v-if="item.has_user"
               class="badge bg-info-subtle text-info-emphasis border border-info-subtle"
-              title="Esta persona posee una cuenta de acceso User asociada"
+              title="Esta persona posee una cuenta de acceso vinculada"
             >
               <i class="fa-solid fa-user-check me-1" aria-hidden="true"></i>Cuenta activa
             </span>
             <span
               v-else
               class="text-muted small"
-              title="Sin cuenta de usuario asociada"
+              title="Sin cuenta de acceso asociada"
             >
-              Sin usuario
+              Sin cuenta
             </span>
           </template>
 
-          <!-- Acciones por Fila -->
+          <!-- Acciones por Fila con Área Clicable y Accesibilidad Optimizadas -->
           <template #actions="{ item }">
-            <div class="btn-group btn-group-sm" role="group" aria-label="Acciones">
+            <div class="d-flex justify-content-end gap-1" role="group" aria-label="Acciones de persona">
               <!-- Ver Detalle -->
               <button
                 type="button"
-                class="btn btn-outline-secondary"
-                title="Ver ficha detallada"
-                aria-label="Ver ficha detallada"
+                class="btn btn-sm btn-outline-secondary px-2 py-1 d-inline-flex align-items-center gap-1"
+                title="Ver ficha de persona"
+                aria-label="Ver ficha de persona"
                 @click="openDetailModal(item.id)"
               >
                 <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                <span class="d-none d-xl-inline small">Ver</span>
               </button>
 
               <!-- Editar Persona -->
               <button
                 v-if="authStore.hasPermission('personas.editar')"
                 type="button"
-                class="btn btn-outline-primary"
-                title="Editar persona"
-                aria-label="Editar persona"
+                class="btn btn-sm btn-outline-primary px-2 py-1 d-inline-flex align-items-center gap-1"
+                title="Editar datos de persona"
+                aria-label="Editar datos de persona"
                 @click="openEditModal(item.id)"
               >
                 <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                <span class="d-none d-xl-inline small">Editar</span>
               </button>
             </div>
           </template>
@@ -205,7 +208,7 @@
       </div>
     </div>
 
-    <!-- MODAL 1: Crear Nueva Persona -->
+    <!-- MODAL 1: Crear Nueva Persona (Grid Balanceado 50/50) -->
     <TfModal
       v-model="showCreateModal"
       title="Registrar Nueva Persona"
@@ -238,11 +241,11 @@
             />
           </div>
 
-          <div class="col-12 col-md-4">
+          <div class="col-12 col-md-6">
             <TfSelect
               id="create-tipo-doc"
               v-model="createForm.tipo_documento"
-              label="Tipo Documento"
+              label="Tipo de documento"
               placeholder="Seleccionar..."
               :options="documentTypeOptions"
               :error-message="createErrors.tipo_documento?.[0]"
@@ -250,11 +253,11 @@
             />
           </div>
 
-          <div class="col-12 col-md-8">
+          <div class="col-12 col-md-6">
             <TfInput
               id="create-num-doc"
               v-model="createForm.numero_documento"
-              label="Número de Documento"
+              label="Número de documento"
               placeholder="Ej. 10203040"
               :error-message="createErrors.numero_documento?.[0]"
               :disabled="saving"
@@ -266,7 +269,7 @@
               id="create-email"
               v-model="createForm.email"
               type="email"
-              label="Correo Electrónico (Opcional)"
+              label="Correo electrónico (opcional)"
               placeholder="correo@ejemplo.com"
               prefix-icon="fa-regular fa-envelope"
               :error-message="createErrors.email?.[0]"
@@ -278,7 +281,7 @@
             <TfInput
               id="create-telefono"
               v-model="createForm.telefono"
-              label="Teléfono / WhatsApp (Opcional)"
+              label="Teléfono / WhatsApp (opcional)"
               placeholder="+51 987 654 321"
               prefix-icon="fa-solid fa-phone"
               :error-message="createErrors.telefono?.[0]"
@@ -310,7 +313,7 @@
       </template>
     </TfModal>
 
-    <!-- MODAL 2: Editar Persona -->
+    <!-- MODAL 2: Editar Persona (Grid Balanceado 50/50 y Etiquetas Humanas) -->
     <TfModal
       v-model="showEditModal"
       title="Editar Persona"
@@ -320,12 +323,13 @@
       <!-- Skeleton mientras recupera datos remotos -->
       <div v-if="loadingRecord" class="py-3">
         <div class="row g-3">
-          <div class="col-6"><TfSkeleton height="40px" /></div>
-          <div class="col-6"><TfSkeleton height="40px" /></div>
-          <div class="col-4"><TfSkeleton height="40px" /></div>
-          <div class="col-8"><TfSkeleton height="40px" /></div>
-          <div class="col-6"><TfSkeleton height="40px" /></div>
-          <div class="col-6"><TfSkeleton height="40px" /></div>
+          <div class="col-12 col-md-6"><TfSkeleton height="40px" /></div>
+          <div class="col-12 col-md-6"><TfSkeleton height="40px" /></div>
+          <div class="col-12 col-md-6"><TfSkeleton height="40px" /></div>
+          <div class="col-12 col-md-6"><TfSkeleton height="40px" /></div>
+          <div class="col-12 col-md-6"><TfSkeleton height="40px" /></div>
+          <div class="col-12 col-md-6"><TfSkeleton height="40px" /></div>
+          <div class="col-12 col-md-6"><TfSkeleton height="40px" /></div>
         </div>
       </div>
 
@@ -354,11 +358,11 @@
             />
           </div>
 
-          <div class="col-12 col-md-4">
+          <div class="col-12 col-md-6">
             <TfSelect
               id="edit-tipo-doc"
               v-model="editForm.tipo_documento"
-              label="Tipo Documento"
+              label="Tipo de documento"
               placeholder="Seleccionar..."
               :options="documentTypeOptions"
               :error-message="editErrors.tipo_documento?.[0]"
@@ -366,11 +370,11 @@
             />
           </div>
 
-          <div class="col-12 col-md-8">
+          <div class="col-12 col-md-6">
             <TfInput
               id="edit-num-doc"
               v-model="editForm.numero_documento"
-              label="Número de Documento"
+              label="Número de documento"
               :error-message="editErrors.numero_documento?.[0]"
               :disabled="saving"
             />
@@ -381,7 +385,7 @@
               id="edit-email"
               v-model="editForm.email"
               type="email"
-              label="Correo Electrónico (Opcional)"
+              label="Correo electrónico (opcional)"
               prefix-icon="fa-regular fa-envelope"
               :error-message="editErrors.email?.[0]"
               :disabled="saving"
@@ -392,7 +396,7 @@
             <TfInput
               id="edit-telefono"
               v-model="editForm.telefono"
-              label="Teléfono / WhatsApp (Opcional)"
+              label="Teléfono / WhatsApp (opcional)"
               prefix-icon="fa-solid fa-phone"
               :error-message="editErrors.telefono?.[0]"
               :disabled="saving"
@@ -403,7 +407,7 @@
             <TfSelect
               id="edit-estado"
               v-model="editForm.estado"
-              label="Estado de la Identidad"
+              label="Estado"
               :required="true"
               :options="statusOptions"
               :error-message="editErrors.estado?.[0]"
@@ -435,69 +439,132 @@
       </template>
     </TfModal>
 
-    <!-- MODAL 3: Ficha de Detalle de Persona -->
+    <!-- MODAL 3: Ficha de Detalle de Persona (Modal Amplio size="lg" con Distribución en Tarjetas) -->
     <TfModal
       v-model="showDetailModal"
       title="Ficha de Identidad de Persona"
+      size="lg"
     >
       <div v-if="loadingRecord" class="py-3">
-        <TfSkeleton height="24px" width="col-6" class="mb-3" />
-        <TfSkeleton :lines="5" class="mb-3" />
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <TfSkeleton height="52px" width="52px" :circle="true" />
+          <div class="flex-grow-1">
+            <TfSkeleton height="24px" width="col-5" class="mb-2" />
+            <TfSkeleton height="14px" width="col-3" />
+          </div>
+        </div>
+        <div class="row g-3">
+          <div class="col-12 col-md-6"><TfSkeleton height="110px" /></div>
+          <div class="col-12 col-md-6"><TfSkeleton height="110px" /></div>
+          <div class="col-12 col-md-6"><TfSkeleton height="110px" /></div>
+          <div class="col-12 col-md-6"><TfSkeleton height="110px" /></div>
+        </div>
       </div>
 
       <div v-else-if="detailRecord" class="py-2">
+        <!-- Encabezado de la Ficha con Avatar e Identidad -->
         <div class="d-flex align-items-center gap-3 mb-4 p-3 bg-body-secondary rounded">
           <div
-            class="rounded-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center"
-            style="width: 48px; height: 48px; font-size: 1.2rem;"
+            class="rounded-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center shadow-sm flex-shrink-0"
+            style="width: 52px; height: 52px; font-size: 1.25rem;"
           >
             {{ getInitials(detailRecord.nombres, detailRecord.apellidos) }}
           </div>
-          <div>
-            <h5 class="fw-bold mb-0 text-body">{{ detailRecord.nombre_completo }}</h5>
-            <small class="text-muted">Registro #{{ detailRecord.id }}</small>
+          <div class="flex-grow-1 min-w-0">
+            <h5 class="fw-bold mb-0 text-body text-truncate">{{ detailRecord.nombre_completo }}</h5>
+            <span class="badge bg-body text-muted border fw-normal font-monospace mt-1">
+              ID #{{ detailRecord.id }}
+            </span>
           </div>
-          <div class="ms-auto">
+          <div class="ms-auto flex-shrink-0">
             <TfBadge :variant="getStatusVariant(detailRecord.estado)" :dot="true">
               {{ formatStatusLabel(detailRecord.estado) }}
             </TfBadge>
           </div>
         </div>
 
-        <dl class="row mb-0 small">
-          <dt class="col-sm-4 text-muted">Tipo Documento:</dt>
-          <dd class="col-sm-8 fw-semibold">{{ detailRecord.tipo_documento || 'No especificado' }}</dd>
+        <!-- Grilla de Información en 2 Columnas Desahogadas -->
+        <div class="row g-3">
+          <!-- Tarjeta 1: Documento de Identidad -->
+          <div class="col-12 col-md-6">
+            <div class="p-3 rounded border bg-body-tertiary h-100">
+              <h6 class="fw-bold text-muted small text-uppercase mb-3 d-flex align-items-center gap-2">
+                <i class="fa-solid fa-id-card text-primary" aria-hidden="true"></i>
+                Documento de Identidad
+              </h6>
+              <div class="mb-2">
+                <span class="text-muted small d-block">Tipo:</span>
+                <span class="fw-semibold text-body">{{ detailRecord.tipo_documento || 'No especificado' }}</span>
+              </div>
+              <div>
+                <span class="text-muted small d-block">Número:</span>
+                <span class="font-monospace fw-bold text-body fs-6">{{ detailRecord.numero_documento || 'Sin número' }}</span>
+              </div>
+            </div>
+          </div>
 
-          <dt class="col-sm-4 text-muted">N° Documento:</dt>
-          <dd class="col-sm-8 font-monospace">{{ detailRecord.numero_documento || 'Sin número' }}</dd>
+          <!-- Tarjeta 2: Contacto -->
+          <div class="col-12 col-md-6">
+            <div class="p-3 rounded border bg-body-tertiary h-100">
+              <h6 class="fw-bold text-muted small text-uppercase mb-3 d-flex align-items-center gap-2">
+                <i class="fa-solid fa-address-book text-primary" aria-hidden="true"></i>
+                Información de Contacto
+              </h6>
+              <div class="mb-2">
+                <span class="text-muted small d-block">Correo electrónico:</span>
+                <a v-if="detailRecord.email" :href="`mailto:${detailRecord.email}`" class="text-decoration-none fw-semibold">
+                  {{ detailRecord.email }}
+                </a>
+                <span v-else class="text-muted small">Sin correo registrado</span>
+              </div>
+              <div>
+                <span class="text-muted small d-block">Teléfono / WhatsApp:</span>
+                <span v-if="detailRecord.telefono" class="fw-semibold text-body">{{ detailRecord.telefono }}</span>
+                <span v-else class="text-muted small">Sin teléfono registrado</span>
+              </div>
+            </div>
+          </div>
 
-          <dt class="col-sm-4 text-muted">Correo Electrónico:</dt>
-          <dd class="col-sm-8">
-            <a v-if="detailRecord.email" :href="`mailto:${detailRecord.email}`" class="text-decoration-none">
-              {{ detailRecord.email }}
-            </a>
-            <span v-else class="text-muted">Sin correo</span>
-          </dd>
+          <!-- Tarjeta 3: Cuenta de Acceso (Terminología Humana) -->
+          <div class="col-12 col-md-6">
+            <div class="p-3 rounded border bg-body-tertiary h-100">
+              <h6 class="fw-bold text-muted small text-uppercase mb-3 d-flex align-items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-primary" aria-hidden="true"></i>
+                Cuenta de Acceso
+              </h6>
+              <div v-if="detailRecord.has_user">
+                <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle px-2 py-1">
+                  <i class="fa-solid fa-check-circle me-1" aria-hidden="true"></i>Cuenta de acceso vinculada
+                </span>
+                <small class="text-muted d-block mt-2">Esta persona posee credenciales activas de acceso al sistema.</small>
+              </div>
+              <div v-else>
+                <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle px-2 py-1">
+                  <i class="fa-solid fa-circle-xmark me-1" aria-hidden="true"></i>Sin cuenta de acceso
+                </span>
+                <small class="text-muted d-block mt-2">Identidad biográfica sin credenciales asignadas.</small>
+              </div>
+            </div>
+          </div>
 
-          <dt class="col-sm-4 text-muted">Teléfono / Celular:</dt>
-          <dd class="col-sm-8">{{ detailRecord.telefono || 'Sin teléfono' }}</dd>
-
-          <dt class="col-sm-4 text-muted">Cuenta de Acceso:</dt>
-          <dd class="col-sm-8">
-            <span v-if="detailRecord.has_user" class="text-success fw-semibold">
-              <i class="fa-solid fa-check-circle me-1" aria-hidden="true"></i>Cuenta User vinculada
-            </span>
-            <span v-else class="text-muted">
-              <i class="fa-solid fa-circle-xmark me-1" aria-hidden="true"></i>Sin cuenta de usuario asociada
-            </span>
-          </dd>
-
-          <dt class="col-sm-4 text-muted">Fecha de Registro:</dt>
-          <dd class="col-sm-8 text-muted">{{ formatDate(detailRecord.created_at) }}</dd>
-
-          <dt class="col-sm-4 text-muted">Última Modificación:</dt>
-          <dd class="col-sm-8 text-muted">{{ formatDate(detailRecord.updated_at) }}</dd>
-        </dl>
+          <!-- Tarjeta 4: Trazabilidad de Registro -->
+          <div class="col-12 col-md-6">
+            <div class="p-3 rounded border bg-body-tertiary h-100">
+              <h6 class="fw-bold text-muted small text-uppercase mb-3 d-flex align-items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left text-primary" aria-hidden="true"></i>
+                Trazabilidad de Registro
+              </h6>
+              <div class="mb-2">
+                <span class="text-muted small d-block">Fecha de creación:</span>
+                <span class="small text-body">{{ formatDate(detailRecord.created_at) }}</span>
+              </div>
+              <div>
+                <span class="text-muted small d-block">Última modificación:</span>
+                <span class="small text-body">{{ formatDate(detailRecord.updated_at) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <template #footer>
@@ -565,12 +632,12 @@ const pagination = reactive({
   perPage: 15,
 });
 
-// Columnas de la tabla
+// Columnas de la tabla (Terminología Oficial Refinada)
 const tableHeaders: TableHeader[] = [
   { key: 'persona', label: 'Persona', sortable: true },
   { key: 'documento', label: 'Documento' },
   { key: 'contacto', label: 'Contacto' },
-  { key: 'has_user', label: 'Cuenta User' },
+  { key: 'has_user', label: 'Cuenta de acceso' },
   { key: 'estado', label: 'Estado', sortable: true },
 ];
 
@@ -821,7 +888,7 @@ async function submitEditPersona() {
 }
 
 /**
- * Apertura de Modal Detalle
+ * Apertura de Modal Detalle (Ficha de Identidad)
  */
 async function openDetailModal(id: number) {
   detailRecord.value = null;
