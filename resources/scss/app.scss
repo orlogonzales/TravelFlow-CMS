@@ -23,46 +23,43 @@ body {
   min-height: 100vh;
 }
 
-// Mapeo transparente para que las clases bi-* de AdminLTE rendericen con Font Awesome Free
-// evitando la instalación redundante de Bootstrap Icons
-.bi-list::before {
-  content: "\f0c9" !important; // fa-bars
-  font-family: "Font Awesome 6 Free" !important;
-  font-weight: 900 !important;
-  font-style: normal;
-}
-
-.bi-chevron-right::before {
-  content: "\f054" !important; // fa-chevron-right
-  font-family: "Font Awesome 6 Free" !important;
-  font-weight: 900 !important;
-  font-style: normal;
-}
-
-.bi-chevron-down::before {
-  content: "\f078" !important; // fa-chevron-down
-  font-family: "Font Awesome 6 Free" !important;
-  font-weight: 900 !important;
-  font-style: normal;
-}
-
-.bi-search::before {
-  content: "\f002" !important; // fa-magnifying-glass
-  font-family: "Font Awesome 6 Free" !important;
-  font-weight: 900 !important;
-  font-style: normal;
-}
-
-.bi-arrows-fullscreen::before {
-  content: "\f065" !important; // fa-expand
-  font-family: "Font Awesome 6 Free" !important;
-  font-weight: 900 !important;
-  font-style: normal;
-}
-
+// 6. Bridge CSS Mínimo y Controlado para AdminLTE 4 Vue (FASE 1B.1A)
+// Solo se mapean los 5 iconos internos hardcodeados en @adminlte/vue 0.8.0
+// que no exponen slots ni props públicas en LteDashboardLayout / LteTopbar / LteSidebarNavItem.
+// Los iconos de usuario, items de menú y temas usan Font Awesome directamente.
+.bi-list::before,
+.bi-chevron-right::before,
+.bi-search::before,
+.bi-arrows-fullscreen::before,
 .bi-fullscreen-exit::before {
-  content: "\f066" !important; // fa-compress
   font-family: "Font Awesome 6 Free" !important;
   font-weight: 900 !important;
   font-style: normal;
+  display: inline-block;
+  line-height: 1;
+}
+
+// 1. LteTopbar: Botón hamburguesa para colapso de sidebar (LteTopbar.vue L63)
+.bi-list::before {
+  content: "\f0c9"; // fa-bars
+}
+
+// 2. LteSidebarNavItem: Flecha indicadora de submenú/grupo (LteSidebarNavItem.vue L108; rotada 90deg por CSS de AdminLTE)
+.bi-chevron-right::before {
+  content: "\f054"; // fa-chevron-right
+}
+
+// 3. LteTopbar: Botón de búsqueda de paleta de comandos (LteTopbar.vue L70)
+.bi-search::before {
+  content: "\f002"; // fa-magnifying-glass
+}
+
+// 4. LteFullscreenToggle: Botón para activar pantalla completa (LteFullscreenToggle.vue L16)
+.bi-arrows-fullscreen::before {
+  content: "\f065"; // fa-expand
+}
+
+// 5. LteFullscreenToggle: Botón para salir de pantalla completa (LteFullscreenToggle.vue L16)
+.bi-fullscreen-exit::before {
+  content: "\f066"; // fa-compress
 }

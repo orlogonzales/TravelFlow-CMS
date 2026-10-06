@@ -1,8 +1,8 @@
 # Frontend Administrativo, Frontend Público y Tooling — TF CMS
 
 **Documento:** `docs/arquitectura/frontend-admin.md`
-**Estado:** `DEFINIDO Y VINCULANTE` (Bootstrap 5.3.8 versión base, AdminLTE 4 Vue shell administrativo, TF Design System, Skeleton Loaders, Descarte de Tailwind, Axios y Bootstrap Icons)
-**Versión:** 2.2 — Fase 1B.1
+**Estado:** `DEFINIDO Y VINCULANTE` (Bootstrap 5.3.8 versión base, AdminLTE 4 Vue shell administrativo, TF Design System, Font Awesome Free oficial con bridge CSS mínimo de 5 iconos, Descarte de Tailwind, Axios y Bootstrap Icons)
+**Versión:** 2.3 — Fase 1B.1A
 
 ---
 
@@ -120,12 +120,19 @@ Estados visuales requeridos:
 
 ---
 
-## 5. Iconografía Oficial: Font Awesome (`DEFINIDO`) y Descarte de Bootstrap Icons
+## 5. Iconografía Oficial: Font Awesome Free (`DEFINIDO`) y Bridge CSS Mínimo
 
 - **Font Awesome Free (6.7.2):** Es el sistema oficial y exclusivo de iconografía del panel de administración.
-- **Bootstrap Icons (`DESCARTADO`):** Queda formalmente descartado. A pesar de ser la iconografía por defecto en ejemplos de AdminLTE 4, no se instala ni se enlaza `@bootstrap-icons` en el proyecto para evitar polución de dependencias y fuentes duplicadas.
-- **Mapeo Transparente:** Los componentes internos de `@adminlte/vue` que emiten selectores de clase Bootstrap Icons (`.bi-list`, `.bi-chevron-right`, `.bi-chevron-down`, `.bi-circle`, etc.) son mapeados a través de CSS pseudo-elementos (`::before`) en `resources/scss/app.scss` hacia los correspondientes glifos unicode de Font Awesome 6 Free.
-- Se implementará encapsulado mediante el componente `<TfIcon>` del Design System, garantizando uso de la variante Free sin dependencias Pro no licenciadas.
+- **Iconos Controlables por TF CMS:** Se declaran y renderizan **directamente** utilizando clases de Font Awesome (`fa-solid fa-*`). Esto aplica a items del menú de navegación (`menuItems`), selector de tema (`TfThemeToggle`), marca del sidebar (`#sidebar-brand`), menú de usuario (`#user-menu`), botones, alertas y campos de formulario.
+- **Comportamiento Interno de `@adminlte/vue 0.8.0` (`biClass`):** La función de utilidad interna de AdminLTE solo añade el prefijo `bi` si el string contiene explícitamente `bi-`. Cuando TF CMS provee clases Font Awesome (ej. `fa-solid fa-gauge-high`), la función devuelve la cadena intacta sin forzar clases de Bootstrap Icons.
+- **Descarte de Bootstrap Icons:** `@bootstrap-icons` queda formalmente descartado. No se instala como dependencia npm ni se cargan sus fuentes web para evitar sobrecarga y duplicidad iconográfica.
+- **Bridge CSS Mínimo y Controlado (5 Iconos Internos Inevitables):** Se autoriza un bridge CSS estrictamente acotado y centralizado en `resources/scss/app.scss` que traduce únicamente los 5 iconos hardcodeados en las plantillas internas de `@adminlte/vue` que carecen de slots o props públicas en `LteDashboardLayout`:
+  1. `.bi-list` $\to$ `\f0c9` (`fa-bars`): Botón hamburguesa del Topbar.
+  2. `.bi-chevron-right` $\to$ `\f054` (`fa-chevron-right`): Flecha indicadora de submenú/grupo (rotada 90° por CSS de AdminLTE).
+  3. `.bi-search` $\to$ `\f002` (`fa-magnifying-glass`): Botón de paleta de comandos del Topbar.
+  4. `.bi-arrows-fullscreen` $\to$ `\f065` (`fa-expand`): Alternador para entrar a pantalla completa.
+  5. `.bi-fullscreen-exit` $\to$ `\f066` (`fa-compress`): Alternador para salir de pantalla completa.
+- Queda prohibido mantener mapeos preventivos o no utilizados (ej. `bi-chevron-down` o simulaciones completas de Bootstrap Icons).
 
 ---
 
