@@ -23,6 +23,12 @@ body {
   min-height: 100vh;
 }
 
+// Garantizar integridad tipográfica de Font Awesome Solid frente a clases de visualización
+.fa-solid,
+.fas {
+  font-weight: 900 !important;
+}
+
 // 6. Bridge CSS Mínimo y Controlado para AdminLTE 4 Vue (FASE 1B.1A)
 // Solo se mapean los 5 iconos internos hardcodeados en @adminlte/vue 0.8.0
 // que no exponen slots ni props públicas en LteDashboardLayout / LteTopbar / LteSidebarNavItem.

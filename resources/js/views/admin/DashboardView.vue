@@ -29,7 +29,7 @@
           </div>
           <div class="col-lg-4 text-center text-lg-end mt-4 mt-lg-0">
             <div class="d-inline-flex align-items-center justify-content-center p-4 rounded-4 bg-primary bg-opacity-10 text-primary">
-              <i class="fa-solid fa-earth-americas display-3" aria-hidden="true"></i>
+              <i class="fa-solid fa-globe fa-3x" aria-hidden="true"></i>
             </div>
           </div>
         </div>
