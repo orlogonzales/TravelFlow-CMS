@@ -1,7 +1,7 @@
 -- ==============================================================================
 -- TRAVELFLOW CMS (TF CMS) — ESQUEMA CONSOLIDADO OFICIAL VIGENTE
 -- ==============================================================================
--- FASE: 1A — NÚCLEO DE IDENTIDAD, RBAC Y AUTENTICACIÓN BACKEND
+-- FASE: 1A.1 — RECTIFICACIÓN RBAC E IDENTIDAD
 -- MOTOR OFICIAL: MySQL 8.4 LTS
 -- CHARSET: utf8mb4 / COLLATION: utf8mb4_0900_ai_ci / utf8mb4_unicode_ci
 --
@@ -52,6 +52,7 @@ CREATE TABLE `users` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `users_email_unique` (`email`),
+  UNIQUE KEY `users_persona_id_unique` (`persona_id`),
   KEY `users_persona_id_foreign` (`persona_id`),
   KEY `users_status_index` (`status`),
   CONSTRAINT `users_persona_id_foreign` FOREIGN KEY (`persona_id`) REFERENCES `personas` (`id`) ON DELETE SET NULL

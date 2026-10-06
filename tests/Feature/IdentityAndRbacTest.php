@@ -161,9 +161,10 @@ class IdentityAndRbacTest extends TestCase
     }
 
     /**
-     * Verifica que el rol 'admin' posee todas las facultades mediante Gate::before.
+     * Verifica que un usuario con rol 'admin' pero SIN el permiso X es DENEGADO.
+     * Demuestra la eliminación del bypass absoluto: ningún slug concede privilegios automáticamente.
      */
-    public function test_admin_role_has_all_abilities(): void
+    public function test_admin_user_without_permission_is_denied(): void
     {
         $roleAdmin = Role::create([
             'name' => 'Administrador',
@@ -179,10 +180,174 @@ class IdentityAndRbacTest extends TestCase
         ]);
         $userAdmin->assignRole($roleAdmin);
 
-        // Sin permisos explícitos asignados, Gate::before debe conceder acceso
-        $this->assertTrue(Gate::forUser($userAdmin)->allows('usuarios.ver'));
+        // Sin permisos asignados al rol, el administrador NO tiene acceso
+        $this->assertFalse($userAdmin->hasPermission('usuarios.eliminar'));
+        $this->assertFalse(Gate::forUser($userAdmin)->allows('usuarios.eliminar'));
+        $this->assertTrue(Gate::forUser($userAdmin)->denies('usuarios.eliminar'));
+    }
+
+    /**
+     * Verifica que un usuario con rol 'admin' CON el permiso X asignado a su rol es PERMITIDO.
+     * La fuente soberana es siempre la matriz: USER -> ROLES -> PERMISSIONS.
+     */
+    public function test_admin_user_with_assigned_permission_is_permitted(): void
+    {
+        $permManage = Permission::create([
+            'name' => 'Gestionar Usuarios',
+            'slug' => 'usuarios.gestionar',
+            'domain' => 'usuario',
+        ]);
+
+        $roleAdmin = Role::create([
+            'name' => 'Administrador',
+            'slug' => 'admin',
+            'is_system' => true,
+        ]);
+        $roleAdmin->givePermission($permManage);
+
+        $userAdmin = User::create([
+            'name' => 'Super Administrador',
+            'email' => 'admin_con_permiso@example.com',
+            'password' => Hash::make('secret123'),
+            'status' => UserStatus::ACTIVE,
+        ]);
+        $userAdmin->assignRole($roleAdmin);
+
+        $this->assertTrue($userAdmin->hasPermission('usuarios.gestionar'));
         $this->assertTrue(Gate::forUser($userAdmin)->allows('usuarios.gestionar'));
-        $this->assertTrue(Gate::forUser($userAdmin)->allows('cualquier.otra.accion'));
+
+        // Permiso no asignado sigue denegado
+        $this->assertFalse($userAdmin->hasPermission('configuracion.seguridad'));
+        $this->assertFalse(Gate::forUser($userAdmin)->allows('configuracion.seguridad'));
+    }
+
+    /**
+     * Verifica que cualquier otro rol (no admin) con el permiso asignado es PERMITIDO,
+     * confirmando que no existe comportamiento diferenciado o privilegiado por slug.
+     */
+    public function test_other_role_with_assigned_permission_is_permitted(): void
+    {
+        $permView = Permission::create([
+            'name' => 'Ver Tours',
+            'slug' => 'tours.ver',
+            'domain' => 'tours',
+        ]);
+
+        $roleEditor = Role::create([
+            'name' => 'Editor de Tours',
+            'slug' => 'editor_tours',
+        ]);
+        $roleEditor->givePermission($permView);
+
+        $userEditor = User::create([
+            'name' => 'Operador Tours',
+            'email' => 'tours@example.com',
+            'password' => Hash::make('secret123'),
+            'status' => UserStatus::ACTIVE,
+        ]);
+        $userEditor->assignRole($roleEditor);
+
+        $this->assertTrue($userEditor->hasPermission('tours.ver'));
+        $this->assertTrue(Gate::forUser($userEditor)->allows('tours.ver'));
+        $this->assertFalse(Gate::forUser($userEditor)->allows('tours.eliminar'));
+    }
+
+    /**
+     * Verifica la cardinalidad aprobada: Persona 0..1 <-> 0..1 User.
+     * Una Persona puede existir sin cuenta de usuario.
+     */
+    public function test_persona_can_exist_without_user(): void
+    {
+        $persona = Persona::create([
+            'nombres' => 'Guía',
+            'apellidos' => 'Turístico',
+            'estado' => PersonaStatus::ACTIVO,
+        ]);
+
+        $this->assertNull($persona->user);
+    }
+
+    /**
+     * Verifica la cardinalidad aprobada: una Persona puede tener a lo sumo un User.
+     */
+    public function test_persona_can_have_at_most_one_user(): void
+    {
+        $persona = Persona::create([
+            'nombres' => 'Elena',
+            'apellidos' => 'Ramos',
+            'estado' => PersonaStatus::ACTIVO,
+        ]);
+
+        $user = User::create([
+            'name' => 'Elena Ramos',
+            'email' => 'elena@example.com',
+            'password' => Hash::make('secret123'),
+            'persona_id' => $persona->id,
+            'status' => UserStatus::ACTIVE,
+        ]);
+
+        $this->assertSame($user->id, $persona->fresh()->user->id);
+        $this->assertSame($persona->id, $user->persona->id);
+    }
+
+    /**
+     * Verifica que MySQL rechaza una segunda cuenta User para la misma Persona
+     * mediante la restricción física UNIQUE(persona_id) a nivel de motor de base de datos.
+     */
+    public function test_second_user_for_same_persona_is_rejected_by_mysql_unique_constraint(): void
+    {
+        $persona = Persona::create([
+            'nombres' => 'Mario',
+            'apellidos' => 'Vargas',
+            'estado' => PersonaStatus::ACTIVO,
+        ]);
+
+        User::create([
+            'name' => 'Mario Cuenta 1',
+            'email' => 'mario1@example.com',
+            'password' => Hash::make('secret123'),
+            'persona_id' => $persona->id,
+            'status' => UserStatus::ACTIVE,
+        ]);
+
+        $this->expectException(\Illuminate\Database\QueryException::class);
+
+        // Intento de crear una segunda cuenta para la misma persona física
+        User::create([
+            'name' => 'Mario Cuenta 2',
+            'email' => 'mario2@example.com',
+            'password' => Hash::make('secret123'),
+            'persona_id' => $persona->id,
+            'status' => UserStatus::ACTIVE,
+        ]);
+    }
+
+    /**
+     * Verifica que múltiples cuentas de usuario técnicas/transitorias pueden coexistir con persona_id = NULL
+     * en MySQL sin infringir el índice UNIQUE(persona_id).
+     */
+    public function test_multiple_users_can_have_null_persona(): void
+    {
+        $user1 = User::create([
+            'name' => 'Sistema 1',
+            'email' => 'sistema1@example.com',
+            'password' => Hash::make('secret123'),
+            'persona_id' => null,
+            'status' => UserStatus::ACTIVE,
+        ]);
+
+        $user2 = User::create([
+            'name' => 'Sistema 2',
+            'email' => 'sistema2@example.com',
+            'password' => Hash::make('secret123'),
+            'persona_id' => null,
+            'status' => UserStatus::ACTIVE,
+        ]);
+
+        $this->assertNull($user1->persona_id);
+        $this->assertNull($user2->persona_id);
+        $this->assertDatabaseHas('users', ['email' => 'sistema1@example.com']);
+        $this->assertDatabaseHas('users', ['email' => 'sistema2@example.com']);
     }
 
     /**

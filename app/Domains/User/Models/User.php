@@ -123,14 +123,10 @@ class User extends Authenticatable implements ActorInterface
 
     /**
      * Comprueba si el usuario posee un permiso a través de alguno de sus roles.
+     * La matriz roles <-> permissions es la única fuente de autorización.
      */
     public function hasPermission(string $permissionSlug): bool
     {
-        // El rol 'admin' posee todas las facultades
-        if ($this->hasRole('admin')) {
-            return true;
-        }
-
         return $this->allPermissions()->contains('slug', $permissionSlug);
     }
 

@@ -20,14 +20,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // El rol 'admin' posee todas las facultades por defecto
-        Gate::before(function ($user, string $ability) {
-            if (method_exists($user, 'hasRole') && $user->hasRole('admin')) {
-                return true;
-            }
-        });
-
-        // Resolución dinámica de permisos RBAC para cualquier habilidad consultada
+        // Resolución dinámica de permisos RBAC: USER -> ROLES -> PERMISSIONS -> GATE
+        // Ningún rol (incluyendo 'admin') posee facultades implícitas automáticas.
+        // Toda autorización deriva exclusivamente de los permisos asignados a sus roles.
         Gate::after(function ($user, string $ability, ?bool $result) {
             if ($result !== null) {
                 return $result;
