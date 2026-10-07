@@ -65,6 +65,15 @@ const routes: RouteRecordRaw[] = [
           title: 'Roles y Permisos — TravelFlow CMS',
         },
       },
+      {
+        path: 'test-shell',
+        name: 'admin-test-shell',
+        component: () => import('@/views/admin/TestShellView.vue'),
+        meta: {
+          requiresAuth: true,
+          title: 'Test Shell — TravelFlow CMS',
+        },
+      },
     ],
   },
   {

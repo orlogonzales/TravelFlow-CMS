@@ -40,6 +40,85 @@
       </div>
     </TfAlert>
 
+    <!-- Grid de Métricas de Usuarios (Patrón Oficial Materialize app-user-list.html) -->
+    <div class="row g-6 mb-6">
+      <div class="col-sm-6 col-xl-3">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="me-1">
+                <p class="text-heading mb-1 small fw-semibold">Total Cuentas</p>
+                <h4 class="mb-1 fw-bold text-heading">{{ pagination.total }}</h4>
+                <small class="text-muted">Cuentas registradas</small>
+              </div>
+              <div class="avatar">
+                <div class="avatar-initial bg-label-primary rounded-3 d-flex align-items-center justify-content-center">
+                  <i class="fa-solid fa-users fs-4 text-primary" aria-hidden="true"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-xl-3">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="me-1">
+                <p class="text-heading mb-1 small fw-semibold">Cuentas Activas</p>
+                <h4 class="mb-1 fw-bold text-heading">{{ activeUsersCount }}</h4>
+                <small class="text-muted">Con acceso habilitado</small>
+              </div>
+              <div class="avatar">
+                <div class="avatar-initial bg-label-success rounded-3 d-flex align-items-center justify-content-center">
+                  <i class="fa-solid fa-user-check fs-4 text-success" aria-hidden="true"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-xl-3">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="me-1">
+                <p class="text-heading mb-1 small fw-semibold">Cuentas Inactivas</p>
+                <h4 class="mb-1 fw-bold text-heading">{{ inactiveUsersCount }}</h4>
+                <small class="text-muted">Sin acceso temporal</small>
+              </div>
+              <div class="avatar">
+                <div class="avatar-initial bg-label-warning rounded-3 d-flex align-items-center justify-content-center">
+                  <i class="fa-solid fa-user-clock fs-4 text-warning" aria-hidden="true"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-xl-3">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="me-1">
+                <p class="text-heading mb-1 small fw-semibold">Bloqueadas</p>
+                <h4 class="mb-1 fw-bold text-heading">{{ blockedUsersCount }}</h4>
+                <small class="text-muted">Acceso revocado</small>
+              </div>
+              <div class="avatar">
+                <div class="avatar-initial bg-label-danger rounded-3 d-flex align-items-center justify-content-center">
+                  <i class="fa-solid fa-user-slash fs-4 text-danger" aria-hidden="true"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Tarjeta Principal con Búsqueda y Tabla -->
     <div class="card shadow-sm border-0 mb-4">
       <!-- Toolbar de Búsqueda de Ancho Completo -->
@@ -821,7 +900,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { useAuthStore } from '@/stores/auth';
 import { useApi, ApiError } from '@/composables/useApi';
@@ -878,6 +957,11 @@ const api = useApi();
 const usuarios = ref<UsuarioItem[]>([]);
 const loading = ref<boolean>(false);
 const fetchError = ref<string | null>(null);
+
+// Métricas de Usuarios (Materialize app-user-list.html)
+const activeUsersCount = computed(() => usuarios.value.filter(u => u.status === 'active').length);
+const inactiveUsersCount = computed(() => usuarios.value.filter(u => u.status === 'inactive').length);
+const blockedUsersCount = computed(() => usuarios.value.filter(u => u.status === 'blocked').length);
 
 // Búsqueda y Ordenamiento
 const searchQuery = ref<string>('');

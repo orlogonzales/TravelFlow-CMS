@@ -32,6 +32,9 @@
             })();
         </script>
 
+        <!-- Materialize Official Helpers (Layout calculation & navbar offset) -->
+        <script src="/assets/vendor/js/helpers.js"></script>
+
         <!-- Vite Assets: Materialize v13.11.1 + Bootstrap 5.3.8 + Vue 3 + TypeScript -->
         @vite(['resources/scss/app.scss', 'resources/js/app.ts'])
     </head>

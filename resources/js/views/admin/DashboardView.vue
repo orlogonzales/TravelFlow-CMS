@@ -1,172 +1,166 @@
 <template>
   <div class="tf-dashboard">
-    <!-- Fila 1: Bienvenida Ejecutiva y Tarjetas Métricas KPI Materialize -->
+    <!-- Fila 1: Grid CRM Oficial Materialize (dashboards-crm.html) -->
     <div class="row g-6 mb-6">
-      <!-- Tarjeta de Bienvenida Oficial Materialize CRM -->
-      <div class="col-12 col-xxl-4 col-lg-5">
-        <div class="card h-100 border-0 shadow-sm position-relative overflow-hidden">
-          <div class="card-body d-flex flex-column justify-content-between p-4">
+      <!-- Congratulations / Welcome Card -->
+      <div class="col-xxl-4 col-12">
+        <div class="card h-100">
+          <div class="card-body text-nowrap d-flex flex-column justify-content-between">
             <div>
-              <div class="badge bg-label-primary rounded-pill mb-2 small fw-semibold">
-                <i class="fa-solid fa-compass me-1" aria-hidden="true"></i> TravelFlow CMS
-              </div>
-              <h4 class="card-title fw-bold mb-1 text-heading">
-                ¡Bienvenido, <span class="text-primary">{{ authStore.displayName }}</span>!
-              </h4>
-              <p class="text-muted small mb-3">
-                Panel central para la gestión integral de contenidos turísticos y seguridad RBAC.
-              </p>
-              <div class="d-flex align-items-center gap-2 mb-4">
-                <span class="badge bg-label-info fw-semibold font-monospace">
-                  <i class="fa-solid fa-user-shield me-1" aria-hidden="true"></i>
-                  {{ primaryRole }}
-                </span>
-                <span class="badge bg-label-success fw-semibold">
-                  <i class="fa-solid fa-circle-check me-1" aria-hidden="true"></i>
-                  Sesión Activa
-                </span>
+              <h5 class="card-title mb-1 text-heading">
+                ¡Bienvenido, <span class="fw-bold">{{ authStore.displayName }}</span>! 🎉
+              </h5>
+              <p class="card-subtitle mb-3 text-muted">Panel central de contenidos turísticos</p>
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="badge bg-label-primary font-monospace">{{ primaryRole }}</span>
+                <span class="badge bg-label-success">Activo</span>
               </div>
             </div>
-
             <div>
               <router-link
                 v-if="authStore.hasPermission('personas.ver')"
                 to="/admin/personas"
-                class="btn btn-sm btn-primary d-inline-flex align-items-center gap-2"
+                class="btn btn-sm btn-primary"
               >
-                <span>Explorar registros</span>
-                <i class="fa-solid fa-arrow-right small" aria-hidden="true"></i>
+                Explorar registros
               </router-link>
+              <button
+                v-else
+                type="button"
+                class="btn btn-sm btn-label-secondary"
+                @click="preferencesStore.openCustomizer"
+              >
+                Preferencias
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Tarjeta Métrica 1: Módulo Personas -->
-      <div v-if="authStore.hasPermission('personas.ver')" class="col-sm-6 col-xxl-2 col-lg-3 col-md-4">
-        <div class="card h-100 border-0 shadow-sm">
-          <div class="card-body d-flex flex-column justify-content-between p-3 p-md-4">
-            <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+      <!-- KPI 1: Personas -->
+      <div v-if="authStore.hasPermission('personas.ver')" class="col-xxl-2 col-md-3 col-sm-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
               <div class="avatar">
-                <div class="avatar-initial bg-label-info rounded-3 d-flex align-items-center justify-content-center p-3">
+                <div class="avatar-initial bg-label-info rounded-3">
                   <i class="fa-solid fa-address-card fs-4 text-info" aria-hidden="true"></i>
                 </div>
               </div>
-              <router-link to="/admin/personas" class="btn btn-xs btn-label-info py-1 px-2 small" title="Gestionar personas">
+              <router-link to="/admin/personas" class="btn btn-xs btn-label-info py-1 px-2 small">
                 Ver
               </router-link>
             </div>
-            <div class="card-info">
+            <div class="card-info mt-4">
               <div v-if="loadingMetrics">
                 <TfSkeleton height="28px" width="50%" class="mb-1" />
                 <TfSkeleton height="14px" width="80%" />
               </div>
               <div v-else>
-                <h4 class="mb-1 fw-bold text-heading">{{ metrics.personas }}</h4>
+                <h5 class="mb-1 fw-bold text-heading">{{ metrics.personas }}</h5>
                 <p class="mb-1 text-muted small">Personas</p>
-                <div class="badge bg-label-secondary rounded-pill small">Identidad Soberana</div>
+                <div class="badge bg-label-secondary rounded-pill">Identidades</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Tarjeta Métrica 2: Módulo Usuarios -->
-      <div v-if="authStore.hasPermission('usuarios.ver')" class="col-sm-6 col-xxl-2 col-lg-3 col-md-4">
-        <div class="card h-100 border-0 shadow-sm">
-          <div class="card-body d-flex flex-column justify-content-between p-3 p-md-4">
-            <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+      <!-- KPI 2: Usuarios -->
+      <div v-if="authStore.hasPermission('usuarios.ver')" class="col-xxl-2 col-md-3 col-sm-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
               <div class="avatar">
-                <div class="avatar-initial bg-label-primary rounded-3 d-flex align-items-center justify-content-center p-3">
+                <div class="avatar-initial bg-label-primary rounded-3">
                   <i class="fa-solid fa-users-gear fs-4 text-primary" aria-hidden="true"></i>
                 </div>
               </div>
-              <router-link to="/admin/usuarios" class="btn btn-xs btn-label-primary py-1 px-2 small" title="Gestionar usuarios">
+              <router-link to="/admin/usuarios" class="btn btn-xs btn-label-primary py-1 px-2 small">
                 Ver
               </router-link>
             </div>
-            <div class="card-info">
+            <div class="card-info mt-4">
               <div v-if="loadingMetrics">
                 <TfSkeleton height="28px" width="50%" class="mb-1" />
                 <TfSkeleton height="14px" width="80%" />
               </div>
               <div v-else>
-                <h4 class="mb-1 fw-bold text-heading">{{ metrics.usuarios }}</h4>
+                <h5 class="mb-1 fw-bold text-heading">{{ metrics.usuarios }}</h5>
                 <p class="mb-1 text-muted small">Usuarios</p>
-                <div class="badge bg-label-secondary rounded-pill small">Cuentas Seguras</div>
+                <div class="badge bg-label-secondary rounded-pill">Cuentas</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Tarjeta Métrica 3: Roles y Permisos -->
-      <div v-if="authStore.hasPermission('roles.ver')" class="col-sm-6 col-xxl-2 col-lg-3 col-md-4">
-        <div class="card h-100 border-0 shadow-sm">
-          <div class="card-body d-flex flex-column justify-content-between p-3 p-md-4">
-            <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+      <!-- KPI 3: Roles -->
+      <div v-if="authStore.hasPermission('roles.ver')" class="col-xxl-2 col-md-3 col-sm-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
               <div class="avatar">
-                <div class="avatar-initial bg-label-warning rounded-3 d-flex align-items-center justify-content-center p-3">
+                <div class="avatar-initial bg-label-warning rounded-3">
                   <i class="fa-solid fa-user-shield fs-4 text-warning" aria-hidden="true"></i>
                 </div>
               </div>
-              <router-link to="/admin/roles" class="btn btn-xs btn-label-warning py-1 px-2 small" title="Gestionar roles">
+              <router-link to="/admin/roles" class="btn btn-xs btn-label-warning py-1 px-2 small">
                 Ver
               </router-link>
             </div>
-            <div class="card-info">
+            <div class="card-info mt-4">
               <div v-if="loadingMetrics">
                 <TfSkeleton height="28px" width="50%" class="mb-1" />
                 <TfSkeleton height="14px" width="80%" />
               </div>
               <div v-else>
-                <h4 class="mb-1 fw-bold text-heading">{{ metrics.roles }}</h4>
-                <p class="mb-1 text-muted small">Roles RBAC</p>
-                <div class="badge bg-label-secondary rounded-pill small">Matriz de Acceso</div>
+                <h5 class="mb-1 fw-bold text-heading">{{ metrics.roles }}</h5>
+                <p class="mb-1 text-muted small">Roles</p>
+                <div class="badge bg-label-secondary rounded-pill">Perfiles RBAC</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Tarjeta Métrica 4: Estado de Seguridad -->
-      <div class="col-sm-6 col-xxl-2 col-lg-3 col-md-4">
-        <div class="card h-100 border-0 shadow-sm">
-          <div class="card-body d-flex flex-column justify-content-between p-3 p-md-4">
-            <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+      <!-- KPI 4: Privilegios Asignados -->
+      <div class="col-xxl-2 col-md-3 col-sm-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
               <div class="avatar">
-                <div class="avatar-initial bg-label-success rounded-3 d-flex align-items-center justify-content-center p-3">
-                  <i class="fa-solid fa-shield-halved fs-4 text-success" aria-hidden="true"></i>
+                <div class="avatar-initial bg-label-success rounded-3">
+                  <i class="fa-solid fa-key fs-4 text-success" aria-hidden="true"></i>
                 </div>
               </div>
-              <span class="badge bg-label-success py-1 px-2 small">Activo</span>
+              <span class="badge bg-label-success py-1 px-2 small">RBAC</span>
             </div>
-            <div class="card-info">
-              <h4 class="mb-1 fw-bold text-heading">100%</h4>
-              <p class="mb-1 text-muted small">Seguridad</p>
-              <div class="badge bg-label-secondary rounded-pill small">Sanctum Stateful</div>
+            <div class="card-info mt-4">
+              <h5 class="mb-1 fw-bold text-heading">{{ authStore.userPermissions.length }}</h5>
+              <p class="mb-1 text-muted small">Privilegios</p>
+              <div class="badge bg-label-secondary rounded-pill">Autorizados</div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Fila 2: Accesos Directos Operativos del CMS -->
-    <div class="row g-6 mb-6">
-      <!-- Columna Izquierda: Acciones Operativas -->
+    <!-- Fila 2: Operaciones y Cuenta -->
+    <div class="row g-6">
+      <!-- Columna Izquierda: Acciones Operativas del CMS -->
       <div class="col-12 col-lg-7">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-header bg-transparent border-bottom p-4">
-            <h5 class="card-title mb-1 fw-bold text-heading">Acciones Operativas del CMS</h5>
-            <small class="text-muted">Tareas administrativas frecuentes autorizadas para su perfil</small>
+        <div class="card h-100">
+          <div class="card-header pb-2">
+            <h5 class="card-title mb-1 text-heading">Acciones Operativas del CMS</h5>
+            <small class="text-muted">Accesos rápidos autorizados para su perfil</small>
           </div>
-          <div class="card-body p-4">
+          <div class="card-body pt-3">
             <div class="row g-3">
-              <!-- Botón Personas -->
               <div v-if="authStore.hasPermission('personas.ver')" class="col-12 col-sm-6">
                 <router-link
                   to="/admin/personas"
-                  class="d-flex align-items-center gap-3 p-3 rounded-3 border text-decoration-none bg-body hover-shadow transition"
+                  class="d-flex align-items-center gap-3 p-3 rounded-3 border text-decoration-none bg-body"
                 >
                   <div class="avatar">
                     <span class="avatar-initial rounded-3 bg-label-info p-3 d-flex align-items-center justify-content-center">
@@ -180,11 +174,10 @@
                 </router-link>
               </div>
 
-              <!-- Botón Usuarios -->
               <div v-if="authStore.hasPermission('usuarios.ver')" class="col-12 col-sm-6">
                 <router-link
                   to="/admin/usuarios"
-                  class="d-flex align-items-center gap-3 p-3 rounded-3 border text-decoration-none bg-body hover-shadow transition"
+                  class="d-flex align-items-center gap-3 p-3 rounded-3 border text-decoration-none bg-body"
                 >
                   <div class="avatar">
                     <span class="avatar-initial rounded-3 bg-label-primary p-3 d-flex align-items-center justify-content-center">
@@ -198,11 +191,10 @@
                 </router-link>
               </div>
 
-              <!-- Botón Roles -->
               <div v-if="authStore.hasPermission('roles.ver')" class="col-12 col-sm-6">
                 <router-link
                   to="/admin/roles"
-                  class="d-flex align-items-center gap-3 p-3 rounded-3 border text-decoration-none bg-body hover-shadow transition"
+                  class="d-flex align-items-center gap-3 p-3 rounded-3 border text-decoration-none bg-body"
                 >
                   <div class="avatar">
                     <span class="avatar-initial rounded-3 bg-label-warning p-3 d-flex align-items-center justify-content-center">
@@ -211,16 +203,15 @@
                   </div>
                   <div>
                     <span class="fw-semibold text-heading d-block">Roles y Permisos</span>
-                    <small class="text-muted">Definición de perfiles y privilegios</small>
+                    <small class="text-muted">Perfiles y matriz de acceso</small>
                   </div>
                 </router-link>
               </div>
 
-              <!-- Botón Preferencias de Interfaz -->
               <div class="col-12 col-sm-6">
                 <a
                   href="javascript:void(0);"
-                  class="d-flex align-items-center gap-3 p-3 rounded-3 border text-decoration-none bg-body hover-shadow transition cursor-pointer"
+                  class="d-flex align-items-center gap-3 p-3 rounded-3 border text-decoration-none bg-body cursor-pointer"
                   @click="preferencesStore.openCustomizer"
                 >
                   <div class="avatar">
@@ -230,7 +221,7 @@
                   </div>
                   <div>
                     <span class="fw-semibold text-heading d-block">Preferencias de Interfaz</span>
-                    <small class="text-muted">Personalizar tema y diseño visual</small>
+                    <small class="text-muted">Tema visual y diseño de layout</small>
                   </div>
                 </a>
               </div>
@@ -241,12 +232,12 @@
 
       <!-- Columna Derecha: Detalle de Sesión del Operador -->
       <div class="col-12 col-lg-5">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-header bg-transparent border-bottom p-4">
-            <h5 class="card-title mb-1 fw-bold text-heading">Información de Cuenta</h5>
+        <div class="card h-100">
+          <div class="card-header pb-2">
+            <h5 class="card-title mb-1 text-heading">Información de Cuenta</h5>
             <small class="text-muted">Detalles del operador autenticado</small>
           </div>
-          <div class="card-body p-4">
+          <div class="card-body pt-3">
             <ul class="list-group list-group-flush">
               <li class="list-group-item d-flex align-items-center justify-content-between px-0 py-2 border-0">
                 <span class="text-muted small">Nombre:</span>
@@ -261,11 +252,11 @@
                 <span class="badge bg-label-primary font-monospace">{{ primaryRole }}</span>
               </li>
               <li class="list-group-item d-flex align-items-center justify-content-between px-0 py-2 border-0">
-                <span class="text-muted small">Estado de Cuenta:</span>
+                <span class="text-muted small">Estado:</span>
                 <span class="badge bg-label-success">Activo</span>
               </li>
               <li class="list-group-item d-flex align-items-center justify-content-between px-0 py-2 border-0">
-                <span class="text-muted small">Permisos Asignados:</span>
+                <span class="text-muted small">Permisos:</span>
                 <span class="badge bg-label-info font-monospace">{{ authStore.userPermissions.length }} privilegios</span>
               </li>
             </ul>
@@ -343,15 +334,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.hover-shadow {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.hover-shadow:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
-}
-
 .cursor-pointer {
   cursor: pointer;
 }
