@@ -1,110 +1,188 @@
 <template>
-  <LteAuthLayout auth-type="login" variant="v2" logo-href="/login">
-    <!-- Logo Oficial de TravelFlow CMS en Card Header -->
-    <template #logo>
-      <div class="d-flex align-items-center justify-content-center gap-2 text-decoration-none py-1">
+  <div class="authentication-wrapper authentication-cover">
+    <!-- Brand / Logotipo en esquina superior -->
+    <router-link to="/login" class="auth-cover-brand d-flex align-items-center gap-2 text-decoration-none">
+      <span class="app-brand-logo demo">
         <i class="fa-solid fa-compass text-primary fs-3" aria-hidden="true"></i>
-        <span class="fs-4 fw-bold text-body">TravelFlow <span class="fw-normal text-primary">CMS</span></span>
+      </span>
+      <span class="app-brand-text demo text-heading fw-bold fs-4">
+        TravelFlow <span class="fw-normal text-primary">CMS</span>
+      </span>
+    </router-link>
+
+    <div class="authentication-inner row m-0">
+      <!-- Sección Izquierda: Ilustración de Portada Materialize -->
+      <div class="d-none d-lg-flex col-lg-7 col-xl-8 align-items-center justify-content-center p-12 pb-2 position-relative">
+        <img
+          :src="illustrationSrc"
+          class="auth-cover-illustration w-100"
+          alt="TravelFlow CMS Login"
+          style="max-height: 560px; object-fit: contain;"
+        />
+        <img
+          :src="maskSrc"
+          class="authentication-image d-none d-lg-block"
+          alt="Decoración de fondo"
+        />
       </div>
-    </template>
 
-    <!-- Cuerpo del Formulario de Autenticación -->
-    <template #default>
-      <p class="login-box-msg text-muted small text-center mb-3">
-        Ingrese sus credenciales para acceder al panel
-      </p>
+      <!-- Sección Derecha: Formulario de Autenticación Seguro -->
+      <div class="d-flex col-12 col-lg-5 col-xl-4 align-items-center authentication-bg position-relative py-sm-12 px-6 px-sm-12 py-6">
+        <div class="w-px-400 mx-auto pt-5 pt-lg-0">
+          <h4 class="mb-1 fw-bold text-heading">¡Bienvenido a TravelFlow! 👋</h4>
+          <p class="mb-4 text-muted small">
+            Ingrese sus credenciales de acceso para gestionar la plataforma turística
+          </p>
 
-      <!-- Alerta de Error Global -->
-      <TfAlert
-        v-if="errorMessage"
-        variant="danger"
-        :message="errorMessage"
-        dismissible
-        @dismiss="errorMessage = ''"
-      />
+          <!-- Alerta de Error Global -->
+          <TfAlert
+            v-if="errorMessage"
+            variant="danger"
+            :message="errorMessage"
+            dismissible
+            @dismiss="errorMessage = ''"
+          />
 
-      <!-- Formulario Reactivo -->
-      <form novalidate @submit.prevent="handleSubmit">
-        <!-- Campo Email -->
-        <TfInput
-          id="login-email"
-          v-model="form.email"
-          type="email"
-          label="Correo electrónico"
-          placeholder="usuario@ejemplo.com"
-          autocomplete="email"
-          required
-          prefix-icon="fa-solid fa-envelope"
-          :error-message="errors.email"
-          :disabled="authStore.loading"
-          @blur="validateEmail"
-        />
+          <!-- Formulario Reactivo de Login -->
+          <form novalidate @submit.prevent="handleSubmit">
+            <!-- Campo Correo Electrónico -->
+            <div class="mb-3">
+              <label for="login-email" class="form-label fw-semibold">
+                Correo electrónico <span class="text-danger" aria-hidden="true">*</span>
+              </label>
+              <div class="input-group">
+                <span class="input-group-text bg-body text-muted">
+                  <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+                </span>
+                <input
+                  id="login-email"
+                  v-model="form.email"
+                  type="email"
+                  class="form-control"
+                  :class="{ 'is-invalid': !!errors.email }"
+                  placeholder="usuario@travelflow.pe"
+                  autocomplete="email"
+                  required
+                  :disabled="authStore.loading"
+                  :aria-invalid="!!errors.email"
+                  :aria-describedby="errors.email ? 'login-email-error' : undefined"
+                  @blur="validateEmail"
+                />
+              </div>
+              <div v-if="errors.email" id="login-email-error" class="invalid-feedback d-block" role="alert">
+                {{ errors.email }}
+              </div>
+            </div>
 
-        <!-- Campo Contraseña con Toggle Font Awesome -->
-        <TfInput
-          id="login-password"
-          v-model="form.password"
-          type="password"
-          label="Contraseña"
-          placeholder="••••••••"
-          autocomplete="current-password"
-          required
-          prefix-icon="fa-solid fa-lock"
-          :error-message="errors.password"
-          :disabled="authStore.loading"
-          :allow-toggle-password="true"
-          @blur="validatePassword"
-        />
+            <!-- Campo Contraseña con Toggle de Visibilidad -->
+            <div class="mb-3">
+              <label for="login-password" class="form-label fw-semibold">
+                Contraseña <span class="text-danger" aria-hidden="true">*</span>
+              </label>
+              <div class="input-group">
+                <span class="input-group-text bg-body text-muted">
+                  <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                </span>
+                <input
+                  id="login-password"
+                  v-model="form.password"
+                  :type="showPassword ? 'text' : 'password'"
+                  class="form-control"
+                  :class="{ 'is-invalid': !!errors.password }"
+                  placeholder="••••••••••••"
+                  autocomplete="current-password"
+                  required
+                  :disabled="authStore.loading"
+                  :aria-invalid="!!errors.password"
+                  :aria-describedby="errors.password ? 'login-password-error' : undefined"
+                  @blur="validatePassword"
+                />
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary bg-body border-start-0"
+                  :aria-label="showPassword ? 'Ocultar contraseña' : 'Ver contraseña'"
+                  :title="showPassword ? 'Ocultar contraseña' : 'Ver contraseña'"
+                  tabindex="-1"
+                  @click="showPassword = !showPassword"
+                >
+                  <i
+                    :class="showPassword ? 'fa-solid fa-eye-slash text-muted' : 'fa-solid fa-eye text-muted'"
+                    aria-hidden="true"
+                  ></i>
+                </button>
+              </div>
+              <div v-if="errors.password" id="login-password-error" class="invalid-feedback d-block" role="alert">
+                {{ errors.password }}
+              </div>
+            </div>
 
-        <!-- Checkbox Recordarme -->
-        <div class="mb-4">
-          <div class="form-check">
-            <input
-              id="login-remember"
-              v-model="form.remember"
-              type="checkbox"
-              class="form-check-input"
-              :disabled="authStore.loading"
-            />
-            <label for="login-remember" class="form-check-label text-muted small user-select-none">
-              Recordarme en este equipo
-            </label>
+            <!-- Checkbox Recordarme -->
+            <div class="mb-4 d-flex justify-content-between align-items-center">
+              <div class="form-check">
+                <input
+                  id="login-remember"
+                  v-model="form.remember"
+                  type="checkbox"
+                  class="form-check-input"
+                  :disabled="authStore.loading"
+                />
+                <label for="login-remember" class="form-check-label text-muted small user-select-none">
+                  Recordarme en este equipo
+                </label>
+              </div>
+            </div>
+
+            <!-- Botón de Envío -->
+            <div class="d-grid mb-3">
+              <TfButton
+                type="submit"
+                variant="primary"
+                block
+                size="lg"
+                :loading="authStore.loading"
+                icon="fa-solid fa-arrow-right-to-bracket"
+              >
+                {{ authStore.loading ? 'Verificando credenciales...' : 'Ingresar al sistema' }}
+              </TfButton>
+            </div>
+          </form>
+
+          <div class="mt-4 pt-3 border-top text-center text-muted small">
+            <span>TravelFlow CMS &copy; {{ currentYear }} &bull; Acceso administrativo restringido</span>
           </div>
         </div>
-
-        <!-- Botón de Envío Full Width -->
-        <div class="d-grid gap-2">
-          <TfButton
-            type="submit"
-            variant="primary"
-            block
-            size="lg"
-            :loading="authStore.loading"
-            icon="fa-solid fa-arrow-right-to-bracket"
-          >
-            {{ authStore.loading ? 'Verificando acceso...' : 'Ingresar al sistema' }}
-          </TfButton>
-        </div>
-      </form>
-
-      <div class="mt-4 pt-3 border-top text-center text-muted small">
-        <span>TravelFlow CMS &copy; {{ new Date().getFullYear() }} &bull; Acceso restringido</span>
       </div>
-    </template>
-  </LteAuthLayout>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { reactive, ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { LteAuthLayout } from '@adminlte/vue';
 import { useAuthStore } from '@/stores/auth';
-import { TfButton, TfInput, TfAlert } from '@/design-system';
+import { useTheme } from '@/composables/useTheme';
+import { TfButton, TfAlert } from '@/design-system';
 import { ApiError } from '@/composables/useApi';
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
+const { isDark } = useTheme();
+
+const currentYear = new Date().getFullYear();
+const showPassword = ref(false);
+
+const illustrationSrc = computed(() => {
+  return isDark.value
+    ? '/assets/img/illustrations/auth-login-illustration-dark.png'
+    : '/assets/img/illustrations/auth-login-illustration-light.png';
+});
+
+const maskSrc = computed(() => {
+  return isDark.value
+    ? '/assets/img/illustrations/auth-basic-login-mask-dark.png'
+    : '/assets/img/illustrations/auth-basic-login-mask-light.png';
+});
 
 const form = reactive({
   email: '',
@@ -185,3 +263,17 @@ async function handleSubmit() {
   }
 }
 </script>
+
+<style scoped>
+.auth-cover-brand {
+  position: absolute;
+  top: 2rem;
+  left: 2.5rem;
+  z-index: 10;
+}
+
+.w-px-400 {
+  width: 100%;
+  max-width: 400px;
+}
+</style>

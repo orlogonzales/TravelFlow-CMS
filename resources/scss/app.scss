@@ -1,21 +1,20 @@
-// TravelFlow CMS - Estilos Oficiales FASE 1B.1
-// 1. Bootstrap 5.3.8 (Infraestructura CSS Base Oficial)
-@import "bootstrap/scss/bootstrap";
+// TravelFlow CMS - Estilos Oficiales (Materialize v13.11.1 + Bootstrap 5.3.8)
 
-// 2. Font Awesome Free (Iconografía Oficial Free)
+// 1. Iconografía Oficial Soberana: Font Awesome Free 6
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 
-// 3. SweetAlert2 (Notificaciones y Feedback Oficial)
-@import "sweetalert2/dist/sweetalert2.min.css";
+// 2. Materialize Core Foundations (Bootstrap 5.3.8 Extendido Oficial)
+@import "../css/materialize/core.css";
+@import "../css/materialize/node-waves.css";
+@import "../css/materialize/perfect-scrollbar.css";
+@import "../css/materialize/page-auth.css";
+@import "../css/materialize/sweetalert2.css";
 
-// 4. AdminLTE 4 Vue (Infraestructura Visual Oficial de Administración)
-@import "@adminlte/vue/css";
-
-// 5. TF Design System - Tokens y Estilos Soberanos
+// 3. TF Design System - Tokens y Reglas Soberanas
 :root {
-  --tf-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --tf-brand-primary: #0d6efd;
-  --tf-brand-dark: #0f172a;
+  --tf-font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --tf-brand-primary: #666cff;
+  --tf-brand-dark: #282a42;
 }
 
 body {
@@ -27,57 +26,4 @@ body {
 .fa-solid,
 .fas {
   font-weight: 900 !important;
-}
-
-// 6. Bridge CSS Mínimo y Controlado para AdminLTE 4 Vue (FASE 1B.1A)
-// Solo se mapean los 5 iconos internos hardcodeados en @adminlte/vue 0.8.0
-// que no exponen slots ni props públicas en LteDashboardLayout / LteTopbar / LteSidebarNavItem.
-// Los iconos de usuario, items de menú y temas usan Font Awesome directamente.
-.bi-list::before,
-.bi-chevron-right::before,
-.bi-search::before,
-.bi-arrows-fullscreen::before,
-.bi-fullscreen-exit::before {
-  font-family: "Font Awesome 6 Free" !important;
-  font-weight: 900 !important;
-  font-style: normal;
-  display: inline-block;
-  line-height: 1;
-}
-
-// 1. LteTopbar: Botón hamburguesa para colapso de sidebar (LteTopbar.vue L63)
-.bi-list::before {
-  content: "\f0c9"; // fa-bars
-}
-
-// 2. LteSidebarNavItem: Flecha indicadora de submenú/grupo (LteSidebarNavItem.vue L108; rotada 90deg por CSS de AdminLTE)
-.bi-chevron-right::before {
-  content: "\f054"; // fa-chevron-right
-}
-
-// 3. LteTopbar: Botón de búsqueda de paleta de comandos (LteTopbar.vue L70)
-.bi-search::before {
-  content: "\f002"; // fa-magnifying-glass
-}
-
-// 4. LteFullscreenToggle: Botón para activar pantalla completa (LteFullscreenToggle.vue L16)
-.bi-arrows-fullscreen::before {
-  content: "\f065"; // fa-expand
-}
-
-// 5. LteFullscreenToggle: Botón para salir de pantalla completa (LteFullscreenToggle.vue L16)
-.bi-fullscreen-exit::before {
-  content: "\f066"; // fa-compress
-}
-
-// 7. Integración de Layout AdminLTE 4 Login v2 en SPA Vue (FASE 1B.1B)
-// Permite que la caja .login-box de LteAuthLayout actúe como flex-item directo de body.login-page,
-// garantizando centrado vertical y horizontal sin columnas ni franjas intermedias.
-body.login-page {
-  background-color: var(--bs-body-secondary, #e9ecef);
-
-  #app,
-  #tf-app-root {
-    display: contents;
-  }
 }

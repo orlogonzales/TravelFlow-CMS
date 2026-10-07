@@ -96,7 +96,7 @@
           <template #cell-persona="{ item }">
             <div class="d-flex align-items-center gap-2">
               <div
-                class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center flex-shrink-0"
+                class="rounded-circle bg-label-primary text-primary fw-bold d-flex align-items-center justify-content-center flex-shrink-0"
                 style="width: 38px; height: 38px; font-size: 0.85rem;"
                 aria-hidden="true"
               >
@@ -112,7 +112,7 @@
           <!-- Celda: Documento -->
           <template #cell-documento="{ item }">
             <div v-if="item.numero_documento">
-              <span class="badge bg-body-secondary text-body border me-1">
+              <span class="badge bg-label-secondary me-1">
                 {{ item.tipo_documento || 'DOC' }}
               </span>
               <span class="font-monospace small">{{ item.numero_documento }}</span>
@@ -149,7 +149,7 @@
           <template #cell-has_user="{ item }">
             <span
               v-if="item.has_user"
-              class="badge bg-info-subtle text-info-emphasis border border-info-subtle"
+              class="badge bg-label-info"
               title="Esta persona posee una cuenta de acceso vinculada"
             >
               <i class="fa-solid fa-user-check me-1" aria-hidden="true"></i>Cuenta activa

@@ -3,7 +3,7 @@
     class="badge d-inline-flex align-items-center gap-1"
     :class="[
       subtle
-        ? `bg-${variant}-subtle text-${variant}-emphasis border border-${variant}-subtle`
+        ? `bg-label-${variant}`
         : `bg-${variant} text-white`,
       { 'rounded-pill': pill }
     ]"

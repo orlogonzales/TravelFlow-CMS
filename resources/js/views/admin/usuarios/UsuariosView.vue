@@ -96,7 +96,7 @@
           <template #cell-usuario="{ item }">
             <div class="d-flex align-items-center gap-2">
               <div
-                class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center flex-shrink-0"
+                class="rounded-circle bg-label-primary text-primary fw-bold d-flex align-items-center justify-content-center flex-shrink-0"
                 style="width: 38px; height: 38px; font-size: 0.85rem;"
                 aria-hidden="true"
               >
@@ -109,7 +109,7 @@
                 <small v-if="item.persona" class="text-muted d-block font-monospace">
                   <i class="fa-solid fa-id-card me-1 small"></i>{{ item.persona.tipo_documento || 'DOC' }} {{ item.persona.numero_documento }}
                 </small>
-                <small v-else class="badge bg-secondary-subtle text-secondary border">Sin persona vinculada</small>
+                <small v-else class="badge bg-label-secondary">Sin persona vinculada</small>
               </div>
             </div>
           </template>
@@ -121,7 +121,7 @@
                 <i class="fa-regular fa-envelope text-muted" aria-hidden="true"></i>
                 {{ item.email }}
               </span>
-              <span v-if="item.id === authStore.user?.id" class="badge bg-primary-subtle text-primary ms-1">
+              <span v-if="item.id === authStore.user?.id" class="badge bg-label-primary ms-1">
                 Mi cuenta
               </span>
             </div>
@@ -133,7 +133,7 @@
               <span
                 v-for="r in item.roles"
                 :key="r.id"
-                class="badge bg-primary text-white border"
+                class="badge bg-label-primary"
                 :title="r.slug"
               >
                 {{ r.name }}

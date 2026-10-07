@@ -1,6 +1,6 @@
 <template>
   <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0">
+    <table class="table table-hover align-middle mb-0" :class="{ 'card-table': inCard }">
       <!-- Encabezados -->
       <thead class="table-light">
         <tr>
@@ -101,6 +101,7 @@ interface Props {
   emptyDescription?: string;
   currentSort?: string;
   currentDirection?: 'asc' | 'desc';
+  inCard?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -109,6 +110,7 @@ const props = withDefaults(defineProps<Props>(), {
   emptyTitle: 'No hay registros disponibles',
   emptyDescription: 'No se encontraron elementos para mostrar.',
   currentDirection: 'desc',
+  inCard: true,
 });
 
 const emit = defineEmits<{

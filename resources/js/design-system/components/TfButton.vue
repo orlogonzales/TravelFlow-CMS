@@ -1,7 +1,7 @@
 <template>
   <button
     :type="type"
-    class="btn d-inline-flex align-items-center justify-content-center gap-2"
+    class="btn d-inline-flex align-items-center justify-content-center gap-2 waves-effect"
     :class="[
       `btn-${variant}`,
       size ? `btn-${size}` : '',
@@ -19,7 +19,24 @@
 
 <script setup lang="ts">
 interface Props {
-  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'light' | 'dark' | 'outline-primary' | 'outline-secondary' | 'outline-danger';
+  variant?:
+    | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'danger'
+    | 'warning'
+    | 'info'
+    | 'light'
+    | 'dark'
+    | 'outline-primary'
+    | 'outline-secondary'
+    | 'outline-danger'
+    | 'label-primary'
+    | 'label-secondary'
+    | 'label-success'
+    | 'label-danger'
+    | 'label-warning'
+    | 'label-info';
   size?: 'sm' | 'lg';
   type?: 'button' | 'submit' | 'reset';
   disabled?: boolean;
