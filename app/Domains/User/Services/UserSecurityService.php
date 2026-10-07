@@ -118,4 +118,31 @@ class UserSecurityService
             return true;
         })->values();
     }
+
+    /**
+     * Valida la regla anti-escalada para definición de roles: un operador autenticado
+     * solo puede otorgar a un rol permisos que él mismo posee en sus privilegios efectivos.
+     *
+     * permissions(given) ⊆ permissions(actor)
+     *
+     * @param User $actor
+     * @param array<int> $permissionIds
+     */
+    public function canAssignPermissions(User $actor, array $permissionIds): bool
+    {
+        if (empty($permissionIds)) {
+            return true;
+        }
+
+        $actorPermissionIds = $actor->allPermissions()->pluck('id')->all();
+        $actorPermissionMap = array_flip($actorPermissionIds);
+
+        foreach ($permissionIds as $pId) {
+            if (!isset($actorPermissionMap[$pId])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

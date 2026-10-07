@@ -87,20 +87,22 @@
         </div>
       </div>
 
-      <!-- Seguridad & Sesión -->
-      <div class="col-sm-6 col-xl-3">
+      <!-- Módulo Roles y Permisos -->
+      <div v-if="authStore.hasPermission('roles.ver')" class="col-sm-6 col-xl-3">
         <div class="card h-100 border-0 shadow-sm">
           <div class="card-body">
             <div class="d-flex align-items-center justify-content-between mb-2">
               <div class="avatar">
-                <span class="avatar-initial rounded-3 bg-label-success p-3 d-flex align-items-center justify-content-center">
-                  <i class="fa-solid fa-shield-check fs-4" aria-hidden="true"></i>
+                <span class="avatar-initial rounded-3 bg-label-warning p-3 d-flex align-items-center justify-content-center">
+                  <i class="fa-solid fa-user-shield fs-4 text-warning" aria-hidden="true"></i>
                 </span>
               </div>
-              <span class="badge bg-label-success">Protegido</span>
+              <router-link to="/admin/roles" class="btn btn-sm btn-label-warning waves-effect">
+                Gestionar
+              </router-link>
             </div>
-            <h5 class="card-title fw-bold mb-1">Seguridad RBAC</h5>
-            <small class="text-muted d-block">Sanctum first-party cookie + anti-escalada estricta</small>
+            <h5 class="card-title fw-bold mb-1">Roles y Permisos</h5>
+            <small class="text-muted d-block">Matriz de privilegios y control de acceso RBAC</small>
           </div>
         </div>
       </div>

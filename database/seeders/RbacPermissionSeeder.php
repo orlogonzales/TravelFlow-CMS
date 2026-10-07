@@ -107,7 +107,53 @@ class RbacPermissionSeeder extends Seeder
             ]
         );
 
-        // 4. Asignación explícita al rol de sistema 'admin'
+        // 4. Permisos Oficiales para Fase 1C.3 (Roles y Permisos)
+        $permRolesVer = Permission::firstOrCreate(
+            ['slug' => 'roles.ver'],
+            [
+                'name' => 'Ver Roles',
+                'domain' => 'rol',
+                'description' => 'Permite visualizar el listado y fichas de roles del sistema',
+            ]
+        );
+
+        $permRolesCrear = Permission::firstOrCreate(
+            ['slug' => 'roles.crear'],
+            [
+                'name' => 'Crear Roles',
+                'domain' => 'rol',
+                'description' => 'Permite registrar nuevos roles y definir su matriz de permisos',
+            ]
+        );
+
+        $permRolesEditar = Permission::firstOrCreate(
+            ['slug' => 'roles.editar'],
+            [
+                'name' => 'Editar Roles',
+                'domain' => 'rol',
+                'description' => 'Permite modificar la información y permisos de roles',
+            ]
+        );
+
+        $permRolesEliminar = Permission::firstOrCreate(
+            ['slug' => 'roles.eliminar'],
+            [
+                'name' => 'Eliminar Roles',
+                'domain' => 'rol',
+                'description' => 'Permite eliminar roles personalizados no utilizados',
+            ]
+        );
+
+        $permPermisosVer = Permission::firstOrCreate(
+            ['slug' => 'permisos.ver'],
+            [
+                'name' => 'Ver Catálogo de Permisos',
+                'domain' => 'rol',
+                'description' => 'Permite consultar el catálogo general de permisos y sus dominios',
+            ]
+        );
+
+        // 5. Asignación explícita al rol de sistema 'admin'
         $adminRole = Role::firstOrCreate(
             ['slug' => 'admin'],
             [
@@ -127,5 +173,10 @@ class RbacPermissionSeeder extends Seeder
         $adminRole->givePermission($permPersonasVer);
         $adminRole->givePermission($permPersonasCrear);
         $adminRole->givePermission($permPersonasEditar);
+        $adminRole->givePermission($permRolesVer);
+        $adminRole->givePermission($permRolesCrear);
+        $adminRole->givePermission($permRolesEditar);
+        $adminRole->givePermission($permRolesEliminar);
+        $adminRole->givePermission($permPermisosVer);
     }
 }

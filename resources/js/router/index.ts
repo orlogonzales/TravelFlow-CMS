@@ -56,6 +56,15 @@ const routes: RouteRecordRaw[] = [
           title: 'Usuarios — TravelFlow CMS',
         },
       },
+      {
+        path: 'roles',
+        name: 'admin-roles',
+        component: () => import('@/views/admin/roles/RolesView.vue'),
+        meta: {
+          requiresAuth: true,
+          title: 'Roles y Permisos — TravelFlow CMS',
+        },
+      },
     ],
   },
   {

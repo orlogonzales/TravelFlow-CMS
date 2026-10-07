@@ -107,4 +107,25 @@ Route::middleware(['web', 'auth:sanctum', 'active'])->group(function () {
         Route::match(['put', 'patch'], '/{usuario}/password', [\App\Http\Controllers\Admin\UsuarioController::class, 'updatePassword'])
             ->middleware('can:usuarios.password');
     });
+
+    // Administración de Roles y Permisos (Fase 1C.3)
+    Route::prefix('admin/roles')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\RolController::class, 'index'])
+            ->middleware('can:roles.ver');
+
+        Route::post('/', [\App\Http\Controllers\Admin\RolController::class, 'store'])
+            ->middleware('can:roles.crear');
+
+        Route::get('/{role}', [\App\Http\Controllers\Admin\RolController::class, 'show'])
+            ->middleware('can:roles.ver');
+
+        Route::match(['put', 'patch'], '/{role}', [\App\Http\Controllers\Admin\RolController::class, 'update'])
+            ->middleware('can:roles.editar');
+
+        Route::delete('/{role}', [\App\Http\Controllers\Admin\RolController::class, 'destroy'])
+            ->middleware('can:roles.eliminar');
+    });
+
+    Route::get('/admin/permisos', [\App\Http\Controllers\Admin\PermisoController::class, 'index'])
+        ->middleware('can:permisos.ver');
 });

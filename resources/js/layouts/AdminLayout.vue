@@ -332,7 +332,10 @@ const navigationItems = computed<NavItem[]>(() => {
     },
   ];
 
-  const hasAdminHeader = authStore.hasPermission('personas.ver') || authStore.hasPermission('usuarios.ver');
+  const hasAdminHeader =
+    authStore.hasPermission('personas.ver') ||
+    authStore.hasPermission('usuarios.ver') ||
+    authStore.hasPermission('roles.ver');
 
   if (hasAdminHeader) {
     items.push({
@@ -355,6 +358,15 @@ const navigationItems = computed<NavItem[]>(() => {
         label: 'Usuarios',
         to: '/admin/usuarios',
         icon: 'fa-solid fa-users-gear',
+      });
+    }
+
+    if (authStore.hasPermission('roles.ver')) {
+      items.push({
+        type: 'link',
+        label: 'Roles y Permisos',
+        to: '/admin/roles',
+        icon: 'fa-solid fa-user-shield',
       });
     }
   }
