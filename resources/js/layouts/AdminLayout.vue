@@ -1,5 +1,11 @@
 <template>
-  <div class="layout-wrapper layout-content-navbar" :class="{ 'layout-menu-collapsed': isCollapsed, 'layout-menu-expanded': isMobileExpanded }">
+  <div
+    class="layout-wrapper layout-content-navbar"
+    :class="{
+      'layout-menu-collapsed': preferencesStore.sidebarCollapsed,
+      'layout-menu-expanded': isMobileExpanded
+    }"
+  >
     <!-- Estado de carga inicial con Skeleton Loader -->
     <div v-if="!authStore.initialized" class="container py-5">
       <div class="card shadow-sm border-0 p-4">
@@ -36,11 +42,11 @@
             class="layout-menu-toggle menu-link text-large ms-auto btn btn-link p-0 border-0 d-none d-xl-flex align-items-center justify-content-center"
             title="Alternar menú lateral"
             aria-label="Alternar menú lateral"
-            @click="toggleSidebarCollapse"
+            @click="preferencesStore.toggleSidebarCollapse"
           >
             <i
               class="fs-5 text-primary"
-              :class="isCollapsed ? 'fa-regular fa-circle' : 'fa-solid fa-circle-dot'"
+              :class="preferencesStore.sidebarCollapsed ? 'fa-regular fa-circle' : 'fa-solid fa-circle-dot'"
               aria-hidden="true"
             ></i>
           </button>
@@ -80,7 +86,11 @@
         <!-- Navbar Superior Desacoplada Materialize -->
         <nav
           id="layout-navbar"
-          class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
+          class="layout-navbar navbar navbar-expand-xl align-items-center bg-navbar-theme"
+          :class="[
+            preferencesStore.contentLayout === 'wide' ? 'container-fluid px-4' : 'container-xxl',
+            { 'navbar-detached': preferencesStore.navbarType === 'sticky' }
+          ]"
           aria-label="Barra de herramientas superior"
         >
           <!-- Botón de Menú Móvil -->
@@ -105,7 +115,7 @@
 
             <!-- Controles a la Derecha: Selector de Tema + Dropdown de Usuario -->
             <ul class="navbar-nav flex-row align-items-center ms-auto gap-2">
-              <!-- Selector Accesible de Tema -->
+              <!-- Selector Accesible de Tema Rápido -->
               <li class="nav-item">
                 <TfThemeToggle />
               </li>
@@ -130,7 +140,7 @@
                 <ul
                   class="dropdown-menu dropdown-menu-end mt-3 py-2 shadow border-0"
                   :class="{ show: isUserMenuOpen }"
-                  style="min-width: 240px;"
+                  style="min-width: 250px;"
                 >
                   <!-- Cabecera de Usuario -->
                   <li class="px-3 py-2">
@@ -155,6 +165,18 @@
 
                   <li>
                     <hr class="dropdown-divider my-2" />
+                  </li>
+
+                  <!-- Acceso 2: Preferencias de Interfaz (Customizer oficial) -->
+                  <li>
+                    <button
+                      type="button"
+                      class="dropdown-item d-flex align-items-center gap-2"
+                      @click="openPreferences"
+                    >
+                      <i class="fa-solid fa-sliders text-muted" aria-hidden="true"></i>
+                      <span>Preferencias de interfaz</span>
+                    </button>
                   </li>
 
                   <!-- Estado Técnico / Sistema -->
@@ -192,13 +214,16 @@
 
         <!-- Contenedor Principal de Vistas -->
         <div class="content-wrapper">
-          <main class="container-xxl flex-grow-1 container-p-y">
+          <main
+            class="flex-grow-1 container-p-y"
+            :class="preferencesStore.contentLayout === 'wide' ? 'container-fluid px-4' : 'container-xxl'"
+          >
             <router-view />
           </main>
 
           <!-- Pie de Página Oficial Materialize -->
           <footer class="content-footer footer bg-footer-theme">
-            <div class="container-xxl">
+            <div :class="preferencesStore.contentLayout === 'wide' ? 'container-fluid px-4' : 'container-xxl'">
               <div class="footer-container d-flex align-items-center justify-content-between py-3 flex-md-row flex-column small">
                 <div>
                   <strong>TravelFlow CMS &copy; {{ currentYear }}</strong> &mdash; Sistema de Gestión de Contenidos Turísticos.
@@ -221,6 +246,9 @@
       class="layout-overlay layout-menu-toggle"
       @click="closeMobileMenu"
     ></div>
+
+    <!-- Template Customizer Oficial Materialize (Acceso Flotante + Drawer) -->
+    <TfCustomizer />
   </div>
 </template>
 
@@ -229,9 +257,10 @@ import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import { useAuthStore } from '@/stores/auth';
-import { useTheme } from '@/composables/useTheme';
+import { usePreferencesStore } from '@/stores/preferences';
 import { TfSkeleton } from '@/design-system';
 import TfThemeToggle from '@/components/admin/TfThemeToggle.vue';
+import TfCustomizer from '@/components/admin/TfCustomizer.vue';
 
 type NavItem =
   | { type: 'header'; label: string }
@@ -240,28 +269,19 @@ type NavItem =
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
-const { initTheme } = useTheme();
+const preferencesStore = usePreferencesStore();
 
 const currentYear = new Date().getFullYear();
 
-// Inicializar tema Materialize
+// Inicializar tema y preferencias de interfaz
 onMounted(() => {
-  initTheme();
+  preferencesStore.initPreferences(authStore.user?.ui_preferences);
   document.addEventListener('click', handleOutsideClick);
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', handleOutsideClick);
 });
-
-// Estado de Sidebar Colapsado (Desktop) con persistencia en localStorage
-const SIDEBAR_STORAGE_KEY = 'tf-sidebar-collapsed';
-const isCollapsed = ref<boolean>(localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true');
-
-function toggleSidebarCollapse() {
-  isCollapsed.value = !isCollapsed.value;
-  localStorage.setItem(SIDEBAR_STORAGE_KEY, String(isCollapsed.value));
-}
 
 // Estado de Menú Expandido (Mobile)
 const isMobileExpanded = ref<boolean>(false);
@@ -280,6 +300,11 @@ const isUserMenuOpen = ref<boolean>(false);
 function toggleUserMenu(event: MouseEvent) {
   event.stopPropagation();
   isUserMenuOpen.value = !isUserMenuOpen.value;
+}
+
+function openPreferences() {
+  isUserMenuOpen.value = false;
+  preferencesStore.openCustomizer();
 }
 
 function handleOutsideClick(event: MouseEvent) {

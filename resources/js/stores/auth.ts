@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useApi, ApiError } from '@/composables/useApi';
+import { type UiPreferences, usePreferencesStore } from '@/stores/preferences';
 
 export interface PersonaProfile {
   id: number;
@@ -17,6 +18,7 @@ export interface UserProfile {
   persona: PersonaProfile | null;
   roles: string[];
   permissions: string[];
+  ui_preferences?: UiPreferences;
 }
 
 export interface LoginCredentials {
@@ -68,6 +70,8 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await api.get<{ success: boolean; user: UserProfile }>('/api/auth/me');
       if (response && response.user) {
         user.value = response.user;
+        const preferencesStore = usePreferencesStore();
+        preferencesStore.initPreferences(response.user.ui_preferences);
       } else {
         user.value = null;
       }
@@ -100,6 +104,8 @@ export const useAuthStore = defineStore('auth', () => {
       if (response && response.user) {
         user.value = response.user;
         initialized.value = true;
+        const preferencesStore = usePreferencesStore();
+        preferencesStore.initPreferences(response.user.ui_preferences);
         return response.user;
       }
 

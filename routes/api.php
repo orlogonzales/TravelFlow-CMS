@@ -23,6 +23,12 @@ Route::prefix('auth')->middleware(['web'])->group(function () {
 
     Route::get('/me', [AuthenticatedSessionController::class, 'me'])
         ->middleware(['auth:sanctum', 'active']);
+
+    Route::middleware(['auth:sanctum', 'active'])->group(function () {
+        Route::get('/preferences', [\App\Http\Controllers\Auth\UserPreferencesController::class, 'show']);
+        Route::patch('/preferences', [\App\Http\Controllers\Auth\UserPreferencesController::class, 'update']);
+        Route::post('/preferences/reset', [\App\Http\Controllers\Auth\UserPreferencesController::class, 'reset']);
+    });
 });
 
 // Endpoints técnicos de verificación para RBAC y autorización estricta

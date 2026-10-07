@@ -34,11 +34,25 @@ class User extends Authenticatable implements ActorInterface
         'status',
         'last_login_at',
         'last_login_ip',
+        'ui_preferences',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    /**
+     * Valores predeterminados soberanos para las preferencias de interfaz.
+     *
+     * @var array<string, mixed>
+     */
+    public const DEFAULT_UI_PREFERENCES = [
+        'theme' => 'system',
+        'semi_dark' => true,
+        'sidebar_collapsed' => false,
+        'content_layout' => 'compact',
+        'navbar_type' => 'sticky',
     ];
 
     /**
@@ -53,7 +67,20 @@ class User extends Authenticatable implements ActorInterface
             'password' => 'hashed',
             'status' => UserStatus::class,
             'last_login_at' => 'datetime',
+            'ui_preferences' => 'array',
         ];
+    }
+
+    /**
+     * Retorna las preferencias visuales efectivas del usuario (defaults soberanos + overrides de usuario).
+     *
+     * @return array<string, mixed>
+     */
+    public function getEffectiveUiPreferences(): array
+    {
+        $custom = is_array($this->ui_preferences) ? $this->ui_preferences : [];
+
+        return array_merge(self::DEFAULT_UI_PREFERENCES, $custom);
     }
 
     /**

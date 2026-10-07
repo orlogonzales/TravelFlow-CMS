@@ -43,6 +43,7 @@ class AuthenticatedSessionController extends Controller
                 ] : null,
                 'roles' => $user->roles->pluck('slug'),
                 'permissions' => $user->allPermissions()->pluck('slug'),
+                'ui_preferences' => $user->getEffectiveUiPreferences(),
             ],
         ]);
     }
@@ -89,6 +90,7 @@ class AuthenticatedSessionController extends Controller
                 ] : null,
                 'roles' => $user->roles->pluck('slug'),
                 'permissions' => $user->allPermissions()->pluck('slug'),
+                'ui_preferences' => $user->getEffectiveUiPreferences(),
             ],
         ]);
     }
