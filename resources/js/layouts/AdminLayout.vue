@@ -23,33 +23,41 @@
 
     <!-- Shell Administrativo Oficial Materialize v13.11.1 -->
     <div v-else class="layout-container">
-      <!-- Menú Lateral Vertical (Sidebar) -->
-      <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-        <!-- Brand / Logotipo -->
+      <!-- Menú Lateral Vertical (Sidebar Oficial Materialize) -->
+      <aside
+        id="layout-menu"
+        class="layout-menu menu-vertical menu bg-menu-theme"
+        @mouseenter="preferencesStore.setSidebarHover(true)"
+        @mouseleave="preferencesStore.setSidebarHover(false)"
+      >
+        <!-- Brand / Logotipo Oficial Materialize -->
         <div class="app-brand demo">
-          <router-link to="/admin" class="app-brand-link d-flex align-items-center gap-2 text-decoration-none">
+          <router-link to="/admin" class="app-brand-link">
             <span class="app-brand-logo demo">
-              <i class="fa-solid fa-compass text-primary fs-3" aria-hidden="true"></i>
+              <span class="text-primary">
+                <i class="fa-solid fa-compass fs-3" aria-hidden="true"></i>
+              </span>
             </span>
-            <span class="app-brand-text demo menu-text fw-bold text-body">
-              TravelFlow <span class="fw-normal text-primary">CMS</span>
+            <span class="app-brand-text demo menu-text fw-semibold ms-2">
+              TravelFlow
             </span>
           </router-link>
 
-          <!-- Toggle Sidebar Collapsed (Desktop) -->
-          <button
-            type="button"
-            class="layout-menu-toggle menu-link text-large ms-auto btn btn-link p-0 border-0 d-none d-xl-flex align-items-center justify-content-center"
-            title="Alternar menú lateral"
-            aria-label="Alternar menú lateral"
+          <!-- Toggle Sidebar Collapsed (Pin / Unpin oficial Materialize) -->
+          <a
+            href="javascript:void(0);"
+            class="layout-menu-toggle menu-link text-large ms-auto cursor-pointer"
+            role="button"
+            :title="preferencesStore.sidebarCollapsed ? 'Fijar menú expandido' : 'Colapsar menú lateral'"
+            :aria-label="preferencesStore.sidebarCollapsed ? 'Fijar menú expandido' : 'Colapsar menú lateral'"
             @click="preferencesStore.toggleSidebarCollapse"
           >
             <i
-              class="fs-5 text-primary"
-              :class="preferencesStore.sidebarCollapsed ? 'fa-regular fa-circle' : 'fa-solid fa-circle-dot'"
+              class="fa-solid fs-5 text-secondary"
+              :class="preferencesStore.sidebarCollapsed ? 'fa-angles-right' : 'fa-angles-left'"
               aria-hidden="true"
             ></i>
-          </button>
+          </a>
         </div>
 
         <div class="menu-inner-shadow"></div>
@@ -93,30 +101,31 @@
           ]"
           aria-label="Barra de herramientas superior"
         >
-          <!-- Botón de Menú Móvil -->
+          <!-- Botón de Menú Móvil (visible solo en breakpoints menores a xl) -->
           <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
-            <button
-              type="button"
-              class="nav-item nav-link px-0 me-xl-4 btn btn-link border-0 text-heading"
+            <a
+              class="nav-item nav-link px-0 me-xl-4 cursor-pointer text-heading"
+              role="button"
               title="Abrir menú de navegación"
               aria-label="Abrir menú de navegación"
               @click="toggleMobileMenu"
             >
               <i class="fa-solid fa-bars fs-4" aria-hidden="true"></i>
-            </button>
+            </a>
           </div>
 
           <div class="navbar-nav-right d-flex align-items-center justify-content-between flex-grow-1" id="navbar-collapse">
-            <!-- Indicador contextual del entorno -->
-            <div class="d-none d-md-flex align-items-center text-muted small">
-              <i class="fa-solid fa-shield-halved me-2 text-primary" aria-hidden="true"></i>
-              <span>Panel Administrativo Seguro</span>
+            <!-- Buscador Global Oficial Materialize [CTRL + K] -->
+            <div class="navbar-nav align-items-center">
+              <div class="nav-item navbar-search-wrapper mb-0">
+                <TfGlobalSearch />
+              </div>
             </div>
 
-            <!-- Controles a la Derecha: Selector de Tema + Dropdown de Usuario -->
+            <!-- Acciones Derechas del Navbar -->
             <ul class="navbar-nav flex-row align-items-center ms-auto gap-2">
-              <!-- Selector Accesible de Tema Rápido -->
-              <li class="nav-item">
+              <!-- Selector / Switcher de Tema Materialize -->
+              <li class="nav-item me-1">
                 <TfThemeToggle />
               </li>
 
@@ -124,7 +133,7 @@
               <li class="nav-item navbar-dropdown dropdown-user dropdown position-relative">
                 <button
                   type="button"
-                  class="nav-link dropdown-toggle hide-arrow p-0 border-0 bg-transparent"
+                  class="nav-link dropdown-toggle hide-arrow p-0 border-0 bg-transparent cursor-pointer"
                   :aria-expanded="isUserMenuOpen"
                   aria-label="Menú de usuario"
                   @click="toggleUserMenu"
@@ -151,8 +160,8 @@
                         </div>
                       </div>
                       <div class="flex-grow-1 text-truncate">
-                        <h6 class="mb-0 fw-semibold text-truncate">{{ authStore.displayName || 'Usuario' }}</h6>
-                        <small class="text-muted d-block text-truncate">{{ authStore.user?.email }}</small>
+                        <h6 class="mb-0 fw-semibold text-truncate small">{{ authStore.displayName || 'Usuario' }}</h6>
+                        <small class="text-muted d-block text-truncate" style="font-size: 0.75rem;">{{ authStore.user?.email }}</small>
                       </div>
                     </div>
                     <div class="mt-2">
@@ -167,7 +176,7 @@
                     <hr class="dropdown-divider my-2" />
                   </li>
 
-                  <!-- Acceso 2: Preferencias de Interfaz (Customizer oficial) -->
+                  <!-- Acceso: Preferencias de Interfaz (Customizer oficial) -->
                   <li>
                     <button
                       type="button"
@@ -177,18 +186,6 @@
                       <i class="fa-solid fa-sliders text-muted" aria-hidden="true"></i>
                       <span>Preferencias de interfaz</span>
                     </button>
-                  </li>
-
-                  <!-- Estado Técnico / Sistema -->
-                  <li>
-                    <router-link
-                      to="/admin/status"
-                      class="dropdown-item d-flex align-items-center gap-2"
-                      @click="isUserMenuOpen = false"
-                    >
-                      <i class="fa-solid fa-server text-muted" aria-hidden="true"></i>
-                      <span>Estado Técnico</span>
-                    </router-link>
                   </li>
 
                   <li>
@@ -261,6 +258,7 @@ import { usePreferencesStore } from '@/stores/preferences';
 import { TfSkeleton } from '@/design-system';
 import TfThemeToggle from '@/components/admin/TfThemeToggle.vue';
 import TfCustomizer from '@/components/admin/TfCustomizer.vue';
+import TfGlobalSearch from '@/components/admin/TfGlobalSearch.vue';
 
 type NavItem =
   | { type: 'header'; label: string }
@@ -406,7 +404,7 @@ async function handleLogout() {
     text: 'Se finalizará su sesión segura en TravelFlow CMS.',
     icon: 'question',
     showCancelButton: true,
-    confirmButtonColor: '#685dd8',
+    confirmButtonColor: '#666cff',
     cancelButtonColor: '#808390',
     confirmButtonText: 'Sí, cerrar sesión',
     cancelButtonText: 'Cancelar',
@@ -431,23 +429,14 @@ async function handleLogout() {
 </script>
 
 <style scoped>
-.app-brand {
-  height: 64px;
-  display: flex;
-  align-items: center;
-  padding: 0 1.5rem;
+.cursor-pointer {
+  cursor: pointer;
 }
 
 .avatar-initial {
   width: 38px;
   height: 38px;
   font-size: 0.9rem;
-}
-
-.menu-vertical .menu-inner > .menu-item .menu-link {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
 }
 
 .dropdown-user .dropdown-menu {

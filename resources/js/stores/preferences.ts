@@ -69,16 +69,28 @@ export const usePreferencesStore = defineStore('preferences', () => {
       }
     }
 
-    // 3. Aplicar estado Collapsed al Sidebar
-    if (layoutWrapper) {
-      if (preferences.value.sidebar_collapsed) {
+    // 3. Aplicar estado Collapsed al Sidebar en html y layoutWrapper
+    if (preferences.value.sidebar_collapsed) {
+      root.classList.add('layout-menu-collapsed');
+      if (layoutWrapper) {
         layoutWrapper.classList.add('layout-menu-collapsed');
-      } else {
+      }
+    } else {
+      root.classList.remove('layout-menu-collapsed');
+      root.classList.remove('layout-menu-hover');
+      if (layoutWrapper) {
         layoutWrapper.classList.remove('layout-menu-collapsed');
       }
     }
 
-    // 4. Guardar en localStorage como caché inmediata
+    // 4. Aplicar Navbar Type (fixed/sticky vs static)
+    if (preferences.value.navbar_type === 'sticky') {
+      root.classList.add('layout-navbar-fixed');
+    } else {
+      root.classList.remove('layout-navbar-fixed');
+    }
+
+    // 5. Guardar en localStorage como caché inmediata
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences.value));
       // Sincronizar clave heredada para el sidebar
@@ -170,6 +182,17 @@ export const usePreferencesStore = defineStore('preferences', () => {
     setSidebarCollapsed(!preferences.value.sidebar_collapsed);
   }
 
+  function setSidebarHover(hovering: boolean): void {
+    if (typeof document === 'undefined') return;
+    if (preferences.value.sidebar_collapsed) {
+      if (hovering) {
+        document.documentElement.classList.add('layout-menu-hover');
+      } else {
+        document.documentElement.classList.remove('layout-menu-hover');
+      }
+    }
+  }
+
   function setContentLayout(layout: 'compact' | 'wide'): void {
     preferences.value.content_layout = layout;
     applyToDom();
@@ -229,6 +252,7 @@ export const usePreferencesStore = defineStore('preferences', () => {
     setSemiDark,
     setSidebarCollapsed,
     toggleSidebarCollapse,
+    setSidebarHover,
     setContentLayout,
     setNavbarType,
     resetPreferences,

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="layout-navbar-fixed layout-menu-fixed layout-compact">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,21 +8,26 @@
         <!-- Fonts: Inter Oficial Local -->
         <link rel="stylesheet" href="/assets/vendor/fonts/inter/inter.css">
 
-        <!-- Anti-Flicker: Aplicación inmediata del tema visual previo a la hidratación -->
+        <!-- Anti-Flicker: Aplicación inmediata del tema visual y layout previo a la hidratación -->
         <script>
             (function () {
                 try {
                     var cached = localStorage.getItem('tf-ui-preferences');
                     var theme = 'system';
+                    var collapsed = false;
                     if (cached) {
                         var parsed = JSON.parse(cached);
                         if (parsed.theme) theme = parsed.theme;
+                        if (parsed.sidebar_collapsed) collapsed = !!parsed.sidebar_collapsed;
                     }
                     var resolved = theme;
                     if (theme === 'system') {
                         resolved = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                     }
                     document.documentElement.setAttribute('data-bs-theme', resolved);
+                    if (collapsed) {
+                        document.documentElement.classList.add('layout-menu-collapsed');
+                    }
                 } catch (e) {}
             })();
         </script>

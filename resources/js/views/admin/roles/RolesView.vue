@@ -38,6 +38,84 @@
       </div>
     </TfAlert>
 
+    <!-- Grid de Tarjetas de Roles (Patrón Oficial Materialize app-access-roles.html) -->
+    <div class="row g-6 mb-6">
+      <!-- Tarjetas por cada Rol registrado -->
+      <div
+        v-for="role in roles"
+        :key="`card-${role.id}`"
+        class="col-xl-4 col-lg-6 col-md-6"
+      >
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body d-flex flex-column justify-content-between p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="text-muted small">Total {{ role.users_count }} {{ role.users_count === 1 ? 'usuario' : 'usuarios' }}</span>
+              <span
+                class="badge"
+                :class="role.is_system ? 'bg-label-info' : 'bg-label-secondary'"
+              >
+                {{ role.is_system ? 'Sistema' : 'Personalizado' }}
+              </span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="role-heading">
+                <h5 class="mb-1 fw-bold text-heading">{{ role.name }}</h5>
+                <a
+                  v-if="authStore.hasPermission('roles.editar')"
+                  href="javascript:void(0);"
+                  class="role-edit-modal text-primary small d-inline-flex align-items-center gap-1 text-decoration-none"
+                  @click="openEditModal(role.id)"
+                >
+                  <i class="fa-solid fa-pen-to-square"></i>
+                  <span>Editar Rol</span>
+                </a>
+                <span v-else class="text-muted small font-monospace">{{ role.slug }}</span>
+              </div>
+              <button
+                type="button"
+                class="btn btn-icon btn-text-secondary rounded-pill"
+                title="Ver detalle del rol"
+                aria-label="Ver detalle del rol"
+                @click="openDetailModal(role.id)"
+              >
+                <i class="fa-solid fa-eye text-muted"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjeta 'Nuevo Rol' Oficial Materialize -->
+      <div v-if="authStore.hasPermission('roles.crear')" class="col-xl-4 col-lg-6 col-md-6">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body d-flex flex-column justify-content-center align-items-center text-center p-4">
+            <div class="avatar mb-3">
+              <div class="avatar-initial rounded-3 bg-label-primary p-3 d-flex align-items-center justify-content-center">
+                <i class="fa-solid fa-shield-plus fs-4 text-primary" aria-hidden="true"></i>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="btn btn-sm btn-primary mb-2 text-nowrap"
+              @click="openCreateModal"
+            >
+              <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>
+              Nuevo Rol
+            </button>
+            <p class="text-muted small mb-0">
+              Crear un nuevo perfil de acceso RBAC si no existe.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Título de Sección del Listado Detallado -->
+    <div class="mb-3">
+      <h4 class="mb-1 fw-bold text-heading">Listado Detallado de Roles y Permisos</h4>
+      <p class="text-muted small mb-0">Gestión de cuentas con roles asignados, identificadores técnicos y matriz de privilegios.</p>
+    </div>
+
     <!-- Tarjeta Principal con Búsqueda y Tabla -->
     <div class="card shadow-sm border-0 mb-4">
       <!-- Toolbar de Búsqueda -->
